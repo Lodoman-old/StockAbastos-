@@ -1,0 +1,13 @@
+{
+    "name": "stockabastos-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "infra:up": "docker-compose up -d",
+        "infra:down": "docker-compose down",
+        "server:dev": "cd server && npm run dev",
+        "admin:dev": "cd admin && npm run dev",
+        "mobile:dev": "cd mobile && npm run dev",
+        "setup": "cd server && npm install && cd ../admin && npm install && cd ../mobile && npm install"
+    }
+}

@@ -1,0 +1,10 @@
+import { readFileSync } from 'fs';
+import pg from 'pg';
+const env = readFileSync('.env', 'utf8');
+const m = env.match(/DATABASE_URL="?([^"\s]+)"?/);
+const pool = new pg.Pool({ connectionString: m ? m[1] : 'postgresql://postgres:postgres@localhost:5432/stockabastos' });
+await pool.query('ALTER TABLE venta_detalles ALTER COLUMN cantidad_cajas TYPE numeric(10,2) USING cantidad_cajas::numeric');
+console.log('Column type changed to numeric(10,2)');
+const r = await pool.query("SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_name = 'venta_detalles' AND column_name = 'cantidad_cajas'");
+console.log(JSON.stringify(r.rows[0]));
+await pool.end();

@@ -1,0 +1,12 @@
+{
+    "assetsPath": "C:\\Users\\lodo1\\AppData\\Local\\Temp\\opencode\\capacitor-assets",
+    "iconBackgroundColor": "#ffffff",
+    "android": {
+        "sourceImage": "icon.png",
+        "adaptiveIcon": {
+            "foreground": "icon-foreground.png",
+            "background": "icon-foreground.png"
+        },
+        "density": "xxxhdpi"
+    }
+}

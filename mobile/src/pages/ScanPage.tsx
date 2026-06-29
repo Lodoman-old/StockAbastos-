@@ -1,0 +1,90 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Html5Qrcode } from "html5-qrcode";
+import { notify } from "../components/Toast";
+
+export function ScanPage() {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const action = params.get("action") || "scan";
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scanning, setScanning] = useState(true);
+  const [manual, setManual] = useState("");
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const id = "qr-reader";
+    containerRef.current.innerHTML = `<div id="${id}"></div>`;
+
+    const qr = new Html5Qrcode(id);
+    scannerRef.current = qr;
+
+    qr.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      (decodedText) => {
+        qr.stop().catch(() => {});
+        setScanning(false);
+        navegar(decodedText);
+      },
+      () => {}
+    ).catch((err) => {
+      notify("Error al abrir cámara: " + err, "error");
+      setScanning(false);
+    });
+
+    return () => {
+      qr.stop().catch(() => {});
+    };
+  }, []);
+
+  const navegar = (codigo: string) => {
+    const qr = codigo.trim();
+    if (action === "receive") navigate(`/receive/${encodeURIComponent(qr)}`);
+    else if (action === "confirm") navigate(`/confirmar-traspaso/${encodeURIComponent(qr)}`);
+    else if (action === "transfer-receive") navigate(`/recibir-traspaso/${encodeURIComponent(qr)}`);
+    else navigate(`/receive/${encodeURIComponent(qr)}`);
+  };
+
+  const handleManual = () => {
+    if (!manual.trim()) return notify("Escribe el código QR", "error");
+    navegar(manual.trim());
+  };
+
+  const titulo = action === "receive" ? "Recibir tarima" :
+    action === "confirm" ? "Confirmar traspaso" :
+    action === "transfer-receive" ? "Recibir traspaso" : "Escanear QR";
+
+  return (
+    <div className="page">
+      <div className="header" style={{ margin: -16, marginBottom: 16, borderRadius: "0 0 12px 12px" }}>
+        <span className="header-back" onClick={() => navigate("/")}>←</span>
+        <h1>{titulo}</h1>
+      </div>
+
+      <div className="card">
+        <div ref={containerRef} className="scanner-container" style={{ minHeight: 250, background: "#000", borderRadius: 12 }} />
+        {!scanning && (
+          <button className="btn btn-primary" onClick={() => window.location.reload()} style={{ marginTop: 12 }}>
+            Volver a escanear
+          </button>
+        )}
+      </div>
+
+      <div className="card">
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 8, textAlign: "center" }}>
+          O escribe el código manualmente
+        </p>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input className="input" value={manual} onChange={e => setManual(e.target.value)}
+            placeholder="Código QR..." style={{ flex: 1 }} />
+          <button className="btn btn-secondary" onClick={handleManual}
+            style={{ width: "auto", padding: "14px 20px", whiteSpace: "nowrap" }}>
+            Ir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

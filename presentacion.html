@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockAbastos — Sistema de Gestión para Mercados de Abasto</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:#0a1a12;color:#e0e0e0;overflow:hidden}
+    .slide{display:none;width:100vw;height:100vh;padding:60px 80px;position:relative;overflow-y:auto}
+    .slide.active{display:flex;flex-direction:column;justify-content:center}
+    .slide::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 50%, rgba(26,138,58,0.08) 0%, transparent 70%);pointer-events:none}
+    .slide.dark{background:#0a1a12}
+    .slide.green{background:linear-gradient(135deg,#0d2818,#1a5c32)}
+    .slide.white{background:#f0f4f1;color:#1a2a1a}
+    .slide.white h2{color:#0d2818}
+    .slide.white p,.slide.white li{color:#2d3d2d}
+    .nav{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:100;align-items:center}
+    .nav button{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s;backdrop-filter:blur(4px)}
+    .nav button:hover{background:rgba(255,255,255,0.25)}
+    .nav button.primary{background:#1a8a3a;color:#fff}
+    .nav button.primary:hover{background:#23a84a}
+    .dots{display:flex;gap:6px;margin:0 12px}
+    .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.25);cursor:pointer;transition:all .3s}
+    .dot.active{background:#4caf50;transform:scale(1.3)}
+    .badge{display:inline-block;background:rgba(76,175,80,0.15);color:#4caf50;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.5px;margin-bottom:16px}
+    h1{font-size:clamp(32px,5vw,64px);font-weight:800;line-height:1.1;margin-bottom:16px}
+    h1 span{background:linear-gradient(135deg,#4caf50,#81c784);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    h2{font-size:clamp(24px,3.5vw,48px);font-weight:700;margin-bottom:20px}
+    p{font-size:clamp(14px,1.3vw,20px);line-height:1.6;color:#b0b0b0;max-width:700px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:30px}
+    .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;transition:all .3s}
+    .card:hover{background:rgba(255,255,255,0.08);transform:translateY(-2px);border-color:rgba(76,175,80,0.3)}
+    .card .icon{font-size:28px;margin-bottom:12px}
+    .card h3{font-size:16px;font-weight:600;margin-bottom:8px}
+    .card p{font-size:13px;color:#999}
+    .slide.white .card{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.08)}
+    .slide.white .card:hover{background:rgba(0,0,0,0.06)}
+    .slide.white .card p{color:#555}
+    .feature-list{list-style:none;margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .slide.white .feature-list li,.feature-list li{padding:10px 16px;background:rgba(255,255,255,0.05);border-radius:10px;font-size:14px;border-left:3px solid #4caf50}
+    .slide.white .feature-list li{background:rgba(0,0,0,0.03);border-left-color:#1a8a3a}
+    .logos{display:flex;gap:30px;align-items:center;margin-top:30px;flex-wrap:wrap}
+    .logos span{font-size:13px;color:#666;background:rgba(255,255,255,0.05);padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.06)}
+    .slide.white .logos span{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.06)}
+    @media(max-width:768px){.slide{padding:30px 20px}.grid{grid-template-columns:1fr}.feature-list{grid-template-columns:1fr}.nav{bottom:15px;gap:6px}.nav button{padding:6px 12px;font-size:12px}}
+    .mockup-img{max-width:100%;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);margin-top:20px}
+    .pill{display:inline-block;background:rgba(76,175,80,0.2);color:#81c784;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;margin-right:6px;margin-bottom:6px}
+    .slide.white .pill{background:rgba(26,138,58,0.1);color:#1a5c32}
+    .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:30px}
+    .pricing-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:30px;text-align:center;transition:all .3s}
+    .pricing-card.featured{border-color:#4caf50;background:rgba(76,175,80,0.08)}
+    .pricing-card h3{font-size:18px;margin-bottom:8px}
+    .pricing-card .price{font-size:36px;font-weight:800;color:#4caf50;margin:12px 0}
+    .pricing-card .price span{font-size:14px;font-weight:400;color:#888}
+    .pricing-card ul{list-style:none;text-align:left;margin:16px 0;font-size:13px;color:#aaa}
+    .pricing-card ul li{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+    .pricing-card ul li::before{content:'✓ ';color:#4caf50;font-weight:700}
+    .tech-stack{display:flex;gap:16px;flex-wrap:wrap;margin-top:20px}
+    .tech-stack span{background:rgba(255,255,255,0.06);padding:8px 16px;border-radius:8px;font-size:13px;border:1px solid rgba(255,255,255,0.08)}
+    .slide.white .tech-stack span{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.08)}
+    .section-number{font-size:14px;color:#4caf50;font-weight:700;letter-spacing:2px;margin-bottom:4px}
+    .contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px}
+    .contact-item{background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;font-size:14px;border:1px solid rgba(255,255,255,0.06)}
+    .contact-item strong{display:block;color:#4caf50;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<div class="slide active dark" id="s1">
+    <div style="max-width:800px">
+        <div class="badge">Sistema de Gestión para Mercados de Abasto</div>
+        <h1><span>StockAbastos</span></h1>
+        <p style="font-size:clamp(16px,1.8vw,24px);margin-bottom:30px">Control de inventario, ventas, compras y logística para centrales de abasto y distribución de perecederos.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <span class="pill">🌐 Web + Móvil</span>
+            <span class="pill">📱 App Android nativa</span>
+            <span class="pill">☁️ On-premise / Nube</span>
+            <span class="pill">⚡ Tiempo real</span>
+        </div>
+        <p style="font-size:12px;color:#666;margin-top:40px">Presiona → o haz clic para navegar</p>
+    </div>
+</div>
+
+<div class="slide dark" id="s2">
+    <div style="max-width:800px">
+        <div class="section-number">01</div>
+        <h2>El problema</h2>
+        <p style="margin-bottom:20px">Los mercados de abasto y distribuidores de perecederos enfrentan desafíos únicos que el software genérico no resuelve:</p>
+        <div class="grid">
+            <div class="card"><div class="icon">📋</div><h3>Inventario por lotes</h3><p>Los productos perecederos se manejan por lotes con fechas de caducidad, no como stock genérico.</p></div>
+            <div class="card"><div class="icon">📦</div><h3>Ventas mixtas</h3><p>Un mismo producto se vende por kilo o por caja, con precios y pesos variables por lote.</p></div>
+            <div class="card"><div class="icon">🔄</div><h3>Múltiples ubicaciones</h3><p>Bodegas, cámaras frías y puntos de venta requieren traspasos y visibilidad centralizada.</p></div>
+            <div class="card"><div class="icon">📉</div><h3>Mermas</h3><p>El control de pérdidas por caducidad, merma y devoluciones es crítico para la rentabilidad.</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="slide dark" id="s3">
+    <div style="max-width:900px">
+        <div class="section-number">02</div>
+        <h2>La solución</h2>
+        <p style="margin-bottom:10px">StockAbastos es un sistema integral diseñado desde cero para la operación diaria de mercados de abasto.</p>
+        <div class="grid">
+            <div class="card"><div class="icon">📊</div><h3>Dashboard en tiempo real</h3><p>Visión general del negocio: ventas del día, stock por bodega, productos próximos a vencer y más.</p></div>
+            <div class="card"><div class="icon">🧾</div><h3>Punto de venta (POS)</h3><p>Ventas rápidas por kg o caja, con precios del día, crédito, ticket y préstamo de cajas.</p></div>
+            <div class="card"><div class="icon">🏪</div><h3>Múltiples bodegas</h3><p>Gestión de ubicaciones físicas, traspasos entre bodegas y recepción de mercancía con QR.</p></div>
+            <div class="card"><div class="icon">📱</div><h3>App móvil nativa</h3><p>Escaneo QR, ventas desde el piso de venta, notificaciones y operación sin conexión a internet.</p></div>
+            <div class="card"><div class="icon">🏷️</div><h3>Etiquetas y códigos QR</h3><p>Impresión de etiquetas ZPL para impresoras Zebra y códigos QR para seguimiento de lotes.</p></div>
+            <div class="card"><div class="icon">💳</div><h3>Gestión de crédito</h3><p>Clientes, ventas a crédito, fechas de vencimiento, saldos pendientes y préstamo de cajas.</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="slide white" id="s4">
+    <div style="max-width:900px">
+        <div class="section-number">03</div>
+        <h2>Funcionalidades clave</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+            <div><strong style="color:#0d2818">📦 Inventario</strong><ul class="feature-list">
+                <li>Productos por SKU con precios base</li>
+                <li>Lotes con fechas de caducidad</li>
+                <li>Múltiples bodegas y ubicaciones</li>
+                <li>Ajustes de inventario y mermas</li>
+                <li>Stock bajo con alertas automáticas</li>
+            </ul></div>
+            <div><strong style="color:#0d2818">💰 Ventas</strong><ul class="feature-list">
+                <li>POS rápido por kg o caja</li>
+                <li>Precios del día configurables</li>
+                <li>Ventas a crédito con control</li>
+                <li>Ticket térmico (58/80mm)</li>
+                <li>Préstamo y devolución de cajas</li>
+            </ul></div>
+            <div><strong style="color:#0d2818">📋 Operaciones</strong><ul class="feature-list">
+                <li>Compras y órdenes de recepción</li>
+                <li>Traspasos entre bodegas</li>
+                <li>Recepción con control de merma</li>
+                <li>Escaneo QR desde móvil</li>
+                <li>Proveedores y clientes</li>
+            </ul></div>
+            <div><strong style="color:#0d2818">📈 Control</strong><ul class="feature-list">
+                <li>Reportes gráficos de ventas</li>
+                <li>Corte de caja diario</li>
+                <li>Historial de precios</li>
+                <li>Gastos y ganancias</li>
+                <li>Roles y permisos por usuario</li>
+            </ul></div>
+        </div>
+    </div>
+</div>
+
+<div class="slide dark" id="s5">
+    <div style="max-width:900px">
+        <div class="section-number">04</div>
+        <h2>Arquitectura técnica</h2>
+        <p style="margin-bottom:20px">Construido con tecnologías modernas, escalables y de código abierto.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="card" style="text-align:center"><div class="icon" style="font-size:24px">⚡</div><h3>Backend</h3><p>Fastify + Node.js · API REST · JWT · PostgreSQL</p></div>
+            <div class="card" style="text-align:center"><div class="icon" style="font-size:24px">🌐</div><h3>Web Admin</h3><p>React + TypeScript · Vite · Diseño responsive · PWA</p></div>
+            <div class="card" style="text-align:center"><div class="icon" style="font-size:24px">📱</div><h3>App Móvil</h3><p>Capacitor · Ionic · Android nativo · SQLite offline</p></div>
+        </div>
+        <div class="tech-stack">
+            <span>PostgreSQL</span><span>Docker</span><span>Fastify</span><span>React</span><span>TypeScript</span>
+            <span>Capacitor</span><span>Ionic</span><span>Zebra ZPL</span><span>QR Codes</span><span>REST API</span>
+        </div>
+        <p style="font-size:13px;color:#888;margin-top:16px">✅ Despliegue on-premise o en nube · Sin dependencia de internet para operación diaria · Respaldo automático en PostgreSQL</p>
+    </div>
+</div>
+
+<div class="slide dark" id="s6">
+    <div style="max-width:850px">
+        <div class="section-number">05</div>
+        <h2>Beneficios para tu negocio</h2>
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+            <div class="card"><div class="icon">⏱️</div><h3>Reducción de pérdidas</h3><p>Controla mermas, lotes próximos a vencer y productos con stock bajo para minimizar pérdidas.</p></div>
+            <div class="card"><div class="icon">📊</div><h3>Decisiones informadas</h3><p>Reportes de ventas, productos más vendidos y rentabilidad en tiempo real.</p></div>
+            <div class="card"><div class="icon">📱</div><h3>Operación móvil</h3><p>Tu equipo puede vender y consultar inventario desde cualquier lugar del mercado con la app Android.</p></div>
+            <div class="card"><div class="icon">🔐</div><h3>Control de acceso</h3><p>Roles y permisos granulares: cada usuario ve solo lo que necesita para su función.</p></div>
+            <div class="card"><div class="icon">🏷️</div><h3>Etiquetado inteligente</h3><p>Códigos QR en cada lote para recepción, traspasos y ventas con escaneo rápido.</p></div>
+            <div class="card"><div class="icon">📋</div><h3>Cumplimiento sanitario</h3><p>Trazabilidad completa por lote con fechas de caducidad y recepción para auditorías.</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="slide green" id="s7">
+    <div style="max-width:700px;text-align:center;margin:0 auto;align-items:center">
+        <div style="font-size:48px;margin-bottom:16px">💼</div>
+        <h2 style="color:#fff">Planes</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>Básico</h3>
+                <div class="price">$299 <span>/mes</span></div>
+                <ul>
+                    <li>Hasta 2 usuarios</li>
+                    <li>Web admin + App móvil</li>
+                    <li>Inventario y ventas</li>
+                    <li>Reportes básicos</li>
+                    <li>Soporte por correo</li>
+                </ul>
+            </div>
+            <div class="pricing-card featured">
+                <h3 style="color:#4caf50">Profesional</h3>
+                <div class="price">$599 <span>/mes</span></div>
+                <ul>
+                    <li>Hasta 10 usuarios</li>
+                    <li>Todo el plan Básico</li>
+                    <li>Múltiples bodegas</li>
+                    <li>Crédito y clientes</li>
+                    <li>Reportes avanzados + gráficos</li>
+                    <li>Soporte prioritario</li>
+                </ul>
+            </div>
+            <div class="pricing-card">
+                <h3>Enterprise</h3>
+                <div class="price">$999 <span>/mes</span></div>
+                <ul>
+                    <li>Usuarios ilimitados</li>
+                    <li>Todo el plan Profesional</li>
+                    <li>On-premise / nube privada</li>
+                    <li>API personalizada</li>
+                    <li>Capacitación presencial</li>
+                    <li>Soporte 24/7</li>
+                </ul>
+            </div>
+        </div>
+        <p style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:16px">* Precios en USD · Facturación mensual · Sin contrato forzoso · Demo gratuita</p>
+    </div>
+</div>
+
+<div class="slide dark" id="s8">
+    <div style="max-width:700px">
+        <div class="section-number">06</div>
+        <h2>Contáctanos</h2>
+        <p style="margin-bottom:20px">Solicita una demo gratuita o contrata hoy y transforma la operación de tu negocio.</p>
+        <div class="contact-grid">
+            <div class="contact-item"><strong>📧 Correo</strong> contacto@stockabastos.com</div>
+            <div class="contact-item"><strong>📞 Teléfono</strong> +52 (55) 1234 5678</div>
+            <div class="contact-item"><strong>🌐 Web</strong> stockabastos.com</div>
+            <div class="contact-item"><strong>📍 CDMX</strong> Central de Abasto, Iztapalapa</div>
+        </div>
+        <div style="margin-top:30px;paddinG:20px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.08)">
+            <p style="font-size:14px;color:#ccc;margin-bottom:8px"><strong>¿Listo para digitalizar tu negocio?</strong></p>
+            <p style="font-size:13px">Agenda una demostración sin compromiso y descubre cómo StockAbastos puede ayudarte a reducir pérdidas, aumentar ventas y tener control total de tu inventario.</p>
+        </div>
+        <p style="font-size:11px;color:#555;margin-top:30px">StockAbastos © 2026 · Todos los derechos reservados</p>
+    </div>
+</div>
+
+<div class="nav">
+    <button id="prevBtn" onclick="prevSlide()">← Anterior</button>
+    <div class="dots" id="dots"></div>
+    <button id="nextBtn" onclick="nextSlide()">Siguiente →</button>
+</div>
+
+<script>
+    let current = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('dots');
+
+    slides.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => goTo(i);
+        dotsContainer.appendChild(dot);
+    });
+
+    function goTo(n) {
+        slides[current].classList.remove('active');
+        dotsContainer.children[current].classList.remove('active');
+        current = n;
+        slides[current].classList.add('active');
+        dotsContainer.children[current].classList.add('active');
+    }
+
+    function nextSlide() { goTo(Math.min(current + 1, slides.length - 1)); }
+    function prevSlide() { goTo(Math.max(current - 1, 0)); }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+    });
+</script>
+</body>
+</html>

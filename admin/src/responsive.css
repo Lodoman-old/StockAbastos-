@@ -1,0 +1,205 @@
+/* Responsive breakpoints:
+   - sm: 480px (phones)
+   - md: 768px (tablets)
+   - lg: 1024px (small laptops)
+*/
+
+/* Table: convert to stacked cards on small screens */
+@media (max-width: 768px) {
+  .responsive-table thead { display: none; }
+  .responsive-table tr {
+    display: block;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #fff;
+  }
+  .responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0 !important;
+    border: none !important;
+    text-align: right !important;
+    gap: 8px;
+  }
+  .responsive-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 11px;
+    color: #555;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .responsive-table td:last-child { border-bottom: none !important; }
+}
+
+/* Modal: full screen on mobile */
+@media (max-width: 768px) {
+  .modal-overlay .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+/* Cards grid: single column on mobile */
+@media (max-width: 600px) {
+  .cards-grid { grid-template-columns: 1fr !important; }
+}
+
+/* Two-column layout: stack on mobile */
+@media (max-width: 768px) {
+  .two-column { flex-direction: column !important; }
+  .two-column > * { width: 100% !important; border-right: none !important; }
+}
+
+/* Stat cards: 2 columns on tablet, 1 on phone */
+@media (max-width: 768px) {
+  .stat-cards { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 480px) {
+  .stat-cards { grid-template-columns: 1fr !important; }
+}
+
+/* Buttons: full width on mobile */
+@media (max-width: 480px) {
+  .btn-group { flex-direction: column !important; }
+  .btn-group > * { width: 100% !important; }
+}
+
+/* Form inputs: full width on mobile */
+@media (max-width: 480px) {
+  .form-row { flex-direction: column !important; gap: 8px !important; }
+  .form-row > * { width: 100% !important; min-width: unset !important; }
+}
+
+/* Hide secondary content on small screens */
+@media (max-width: 480px) {
+  .hide-phone { display: none !important; }
+}
+@media (max-width: 768px) {
+  .hide-tablet { display: none !important; }
+}
+
+/* Scrollable containers for small screens */
+@media (max-width: 768px) {
+  .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* Main content padding reduced on mobile */
+@media (max-width: 768px) {
+  .main-content-inner { padding: 12px !important; }
+}
+@media (max-width: 480px) {
+  .main-content-inner { padding: 8px !important; }
+}
+
+/* Page heading: stack on mobile */
+@media (max-width: 480px) {
+  .page-heading { flex-direction: column !important; align-items: stretch !important; gap: 8px !important; }
+  .page-heading h1 { font-size: 18px !important; }
+}
+
+/* Charts container: full width on mobile */
+@media (max-width: 768px) {
+  .charts-grid { grid-template-columns: 1fr !important; }
+}
+
+/* Inventory table per bodega: stack on mobile */
+@media (max-width: 768px) {
+  .bodega-section { flex-direction: column !important; }
+  .bodega-section > div { width: 100% !important; }
+}
+
+/* Login card: less padding on mobile */
+@media (max-width: 480px) {
+  .login-card { padding: 24px 16px !important; }
+}
+
+/* Search input: larger touch target on mobile */
+@media (max-width: 480px) {
+  input, select, button { font-size: 16px !important; }
+}
+
+/* RecepcionTarimas two-column layout: stack on mobile */
+@media (max-width: 768px) {
+  .reception-layout { flex-direction: column !important; }
+  .reception-layout > * { width: 100% !important; }
+}
+
+/* POS specific: product list on mobile */
+@media (max-width: 768px) {
+  .pos-layout {
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  .pos-layout > .pos-products {
+    width: 100% !important;
+    flex: none !important;
+    max-height: 35vh !important;
+    border-right: none !important;
+    border-bottom: 1px solid #eee;
+  }
+  .pos-layout > .pos-cart {
+    width: 100% !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    max-height: 50vh !important;
+  }
+  .pos-layout .scroll-inner {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+@media (max-width: 480px) {
+  .pos-layout > .pos-products {
+    max-height: 30vh !important;
+  }
+  .pos-layout > .pos-cart {
+    max-height: 55vh !important;
+  }
+}
+
+/* Cart items as stacked cards on mobile */
+@media (max-width: 768px) {
+  .cart-table thead { display: none; }
+  .cart-table tr {
+    display: block;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    background: #fafafa;
+  }
+  .cart-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0 !important;
+    border: none !important;
+    text-align: right !important;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .cart-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 11px;
+    color: #555;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .cart-table td input {
+    width: 50px !important;
+    text-align: right;
+  }
+  .cart-table td:last-child { border-bottom: none !important; }
+  .cart-table td[data-label=""]::before { display: none !important; }
+  .cart-table td[data-label=""] { justify-content: center !important; }
+}

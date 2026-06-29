@@ -1,0 +1,7 @@
+BEGIN;
+
+ALTER TABLE bodegas ADD COLUMN IF NOT EXISTS es_default BOOLEAN NOT NULL DEFAULT FALSE;
+
+UPDATE bodegas SET es_default = TRUE WHERE codigo = 'BOD-A-01';
+
+COMMIT;

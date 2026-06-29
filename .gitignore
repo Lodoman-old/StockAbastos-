@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+*.log
+.capacitor/
+android/
+ios/
+.DS_Store
+Thumbs.db
+*.apk
+build/
+.cache/
