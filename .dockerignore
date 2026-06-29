@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.git/
+*.log
+.env
+.capacitor/
+android/
+ios/
+.DS_Store
+Thumbs.db
+*.apk
+build/
+.cache/
