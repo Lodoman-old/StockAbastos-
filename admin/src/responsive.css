@@ -6,10 +6,10 @@
 
 /* ALL tables: scrollable on small screens */
 @media (max-width: 768px) {
-  .table-wrap, div[style*="overflow"]:has(table) { overflow-x: auto !important; }
-  table { min-width: 0 !important; }
-  /* Fix for inline overflow-x auto not working in some contexts */
-  div[style*="overflow-x"]:not([style*="width"]) { width: 100%; }
+  .table-wrap { overflow-x: auto !important; }
+  /* Force any container with inline overflow-x to be scrollable */
+  div[style*="overflow-x"] { overflow-x: auto !important; }
+  /* Avoid :has() for broader browser support */
 }
 
 /* Table: convert to stacked cards on small screens */
@@ -41,11 +41,6 @@
     flex-shrink: 0;
   }
   .responsive-table td:last-child { border-bottom: none !important; }
-}
-
-/* Tables without responsive-table class: scroll + compact on mobile */
-@media (max-width: 768px) {
-  table:not(.responsive-table) { display: block; width: 100%; overflow-x: auto; font-size: 13px; }
 }
 
 /* Modal: full screen on mobile */
