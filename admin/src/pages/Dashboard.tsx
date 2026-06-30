@@ -14,19 +14,22 @@ export function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        Promise.all([
+        Promise.allSettled([
             get("/dashboard/stats"),
             get("/dashboard/ventas-por-dia"),
             get("/dashboard/creditos-proximos"),
             get("/cortes/esta-abierto").catch(() => ({ abierto: null })),
             get("/dashboard/inventario"),
         ]).then(([s, v, cp, cj, inv]) => {
-            setStats(s);
-            setVentasDiarias(v);
-            setCreditosProximos(cp || []);
-            setCajaStatus(cj);
-            setInventario(inv || []);
-        }).catch(console.error).finally(() => setLoading(false));
+            if (s.status === "fulfilled") setStats(s.value);
+            if (v.status === "fulfilled") setVentasDiarias(v.value);
+            if (cp.status === "fulfilled") setCreditosProximos(cp.value || []);
+            if (cj.status === "fulfilled") setCajaStatus(cj.value);
+            if (inv.status === "fulfilled") setInventario(inv.value || []);
+            if ([s, v, cp, cj, inv].some(r => r.status === "rejected")) {
+                console.error("Errores en dashboard:", [s, v, cp, cj, inv].filter(r => r.status === "rejected").map(r => (r as PromiseRejectedResult).reason));
+            }
+        }).finally(() => setLoading(false));
     }, []);
 
     const invPorBodega = React.useMemo(() => {
