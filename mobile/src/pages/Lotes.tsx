@@ -63,7 +63,7 @@ export function Lotes() {
                                     </div>
                                     {esAdmin && (
                                         <div style={{ padding: "0 14px 10px", display: "flex", gap: 8 }}>
-                                            <button onClick={(e) => { e.stopPropagation(); window.open(`${getApiUrl()}/api/tarimas/qr-lote/${g.id}`, "_blank"); }}
+                                            <button onClick={(e) => { e.stopPropagation(); const u = `${getApiUrl()}/api/tarimas/qr-lote/${g.id}`; if (u.includes("/api")) window.open(u, "_system") || window.open(u, "_blank") || (window.location.href = u); }}
                                                 style={{ padding: "4px 10px", background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11 }}>
                                                 Imprimir QR
                                             </button>
@@ -87,7 +87,7 @@ export function Lotes() {
                                                         {h.bodega_nombre}{h.fecha_caducidad ? ` · Cad: ${new Date(h.fecha_caducidad).toLocaleDateString()}` : ""}
                                                     </div>
                                                     {esAdmin && parseInt(h.pendientes || 0) > 0 && (
-                                                        <button onClick={() => window.open(`${getApiUrl()}/api/tarimas/qr-lote/${h.id}`, "_blank")}
+                                                        <button onClick={() => { const u = `${getApiUrl()}/api/tarimas/qr-lote/${h.id}`; window.open(u, "_system") || window.open(u, "_blank") || (window.location.href = u); }}
                                                             style={{ marginTop: 6, padding: "4px 10px", background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11 }}>
                                                             Imprimir QR
                                                         </button>

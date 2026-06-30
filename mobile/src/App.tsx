@@ -24,17 +24,18 @@ import { Reportes } from "./pages/Reportes";
 import { HistorialPrecios } from "./pages/HistorialPrecios";
 import { Toast } from "./components/Toast";
 
-class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: any }> {
   state = { error: null };
-  static getDerivedStateFromError(e: Error) { return { error: e }; }
+  static getDerivedStateFromError(e: any) { return { error: e }; }
   render() {
     if (this.state.error) {
+      const err = this.state.error;
+      const dump = typeof err === "object" ? JSON.stringify({ message: err.message, stack: err.stack, ...err }, null, 2) : String(err);
       return (
         <div className="page" style={{ textAlign: "center", paddingTop: 60 }}>
           <h2>Error inesperado</h2>
-          <p style={{ color: "#888", fontSize: 13, marginBottom: 16 }}>{this.state.error.message || "(sin mensaje)"}</p>
-          <pre style={{ fontSize: 10, textAlign: "left", maxHeight: 300, overflow: "auto", background: "#f5f5f5", padding: 12, borderRadius: 8, marginBottom: 16 }}>
-            {this.state.error.stack || ""}
+          <pre style={{ fontSize: 10, textAlign: "left", maxHeight: 300, overflow: "auto", background: "#f5f5f5", padding: 12, borderRadius: 8, marginBottom: 16, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+            {dump}
           </pre>
           <button className="btn btn-primary" onClick={() => { this.setState({ error: null }); window.location.hash = "#/"; }}>
             Volver al inicio

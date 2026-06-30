@@ -6,7 +6,8 @@ import { notify } from "../components/Toast";
 
 export function HomePage() {
   const navigate = useNavigate();
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+  let usuario: any = {};
+  try { usuario = JSON.parse(localStorage.getItem("usuario") || "{}"); } catch {}
   const esAdmin = usuario.rol === "admin" || usuario.rol === "supervisor";
   const permisos: string[] = usuario.permisos || [];
   const [pendientes, setPendientes] = useState(0);

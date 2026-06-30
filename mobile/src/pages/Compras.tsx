@@ -224,7 +224,7 @@ export function Compras() {
                             <div style={{ fontWeight: "bold", fontSize: 15 }}>{c.proveedor || "Sin proveedor"} — ${money(c.total || 0)}</div>
                             <div style={{ fontSize: 13, color: "#888" }}>{new Date(c.fecha).toLocaleDateString()} — {c.detalles?.length || 0} producto(s)</div>
                             {esAdmin && c.detalles?.[0]?.lote_padre_id && (
-                                <button onClick={() => window.open(`${getApiUrl()}/api/tarimas/qr-lote/${c.detalles[0].lote_padre_id}`, "_blank")}
+                                <button onClick={() => { const u = `${getApiUrl()}/api/tarimas/qr-lote/${c.detalles[0].lote_padre_id}`; window.open(u, "_system") || window.open(u, "_blank") || (window.location.href = u); }}
                                     style={{ marginTop: 8, padding: "6px 12px", background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
                                     Imprimir QR
                                 </button>
