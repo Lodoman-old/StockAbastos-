@@ -36,15 +36,61 @@ export async function traspasosRoutes(app: FastifyInstance) {
     }));
   });
 
-  app.post<{ Params: { id: string } }>("/:id/cargar", async (request, reply) => {
+  app.post<{ Params: { id: string }; Body: { cajas?: number } }>("/:id/cargar", async (request, reply) => {
     const { id } = request.params;
+    const cajasSolicitadas = request.body?.cajas;
+
     const tarima = await query(
       "SELECT * FROM tarimas WHERE id = $1 AND estado IN ('RECIBIDA','PARCIAL') AND bodega_destino_id IS NOT NULL",
       [id]
     );
     if (!tarima.rows.length) return reply.status(404).send({ error: "Tarima no encontrada o no disponible para carga" });
 
-    const t = tarima.rows[0];
+    let t = tarima.rows[0];
+    const totalCajas = parseFloat(t.cajas_restantes) || 1;
+
+    const cajasTransferir = cajasSolicitadas != null ? cajasSolicitadas : totalCajas;
+    if (cajasTransferir <= 0 || cajasTransferir > totalCajas) {
+      return reply.status(400).send({ error: `Cantidad inválida. La tarima tiene ${totalCajas} cajas disponibles` });
+    }
+
+    // If partial transfer, split first
+    if (cajasTransferir < totalCajas) {
+      const numTarima = await query("SELECT COALESCE(MAX(numero_tarima), 0) + 1 AS next FROM tarimas WHERE lote_id = $1 AND producto_id = $2 AND tarima_tipo_id = $3", [t.lote_id, t.producto_id, t.tarima_tipo_id]);
+      const nextNum = numTarima.rows[0]?.next || 1;
+
+      const lote = await query("SELECT codigo_lote, proveedor_nombre FROM lotes WHERE id = $1", [t.lote_id]);
+      const abrev = lote.rows[0]?.proveedor_nombre ? lote.rows[0].proveedor_nombre.substring(0, 4).toUpperCase() : "LOTE";
+      const hoy = new Date().toISOString().substring(0, 10).replace(/-/g, "");
+      const tarimaSeq = await query("SELECT COALESCE(MAX(CAST(SPLIT_PART(codigo_qr, '-', 1) AS VARCHAR)), 'TAR0') FROM tarimas");
+      const seqMatch = tarimaSeq.rows[0]?.coalesce?.match(/TAR(\d+)/);
+      const nextSeq = seqMatch ? parseInt(seqMatch[1], 10) + 1 : 1;
+      const codigoQrNuevo = `TAR${nextSeq}-${abrev}-${hoy}-1`;
+
+      const nuevoPesoKg = t.peso_kg != null
+        ? (cajasTransferir / Number(t.cajas_originales)) * Number(t.peso_kg)
+        : null;
+      const pesoRestante = t.peso_kg != null ? Number(t.peso_kg) - (nuevoPesoKg ?? 0) : null;
+
+      await query(`
+        UPDATE tarimas SET cajas_restantes = cajas_restantes - $1,
+            peso_kg = COALESCE($2, peso_kg),
+            estado = 'PARCIAL',
+            updated_at = NOW()
+        WHERE id = $3
+      `, [cajasTransferir, pesoRestante, t.id]);
+
+      const nuevo = await query(`
+        INSERT INTO tarimas (lote_id, producto_id, tarima_tipo_id, numero_tarima, peso_kg, codigo_qr, estado, bodega_id, bodega_destino_id, fecha_caducidad, cajas_originales, cajas_restantes)
+        VALUES ($1, $2, $3, $4, $5, $6, 'RECIBIDA', $7, $8, $9, $10, $10)
+        RETURNING *
+      `, [t.lote_id, t.producto_id, t.tarima_tipo_id, nextNum, nuevoPesoKg, codigoQrNuevo, t.bodega_id, t.bodega_destino_id, t.fecha_caducidad, cajasTransferir]);
+
+      t = nuevo.rows[0];
+      await cascadeLoteEstado(t.lote_id);
+    }
+
+    // Now confirm transfer for t
     const bodega_destino_id = t.bodega_destino_id;
     const cajas = parseFloat(t.cajas_restantes) || 1;
     const pesoKg = t.peso_kg != null ? Number(t.peso_kg) : null;

@@ -13,6 +13,7 @@ export function ScanPage() {
   const [scanning, setScanning] = useState(true);
   const [manual, setManual] = useState("");
   const [procesando, setProcesando] = useState(false);
+  const [cajasTransferir, setCajasTransferir] = useState("");
 
   const iniciarScanner = () => {
     if (!containerRef.current) return;
@@ -49,7 +50,9 @@ export function ScanPage() {
     setProcesando(true);
     try {
       if (action === "confirm") {
-        await post(`/tarimas/confirmar-traspaso/${encodeURIComponent(qr)}`);
+        const body: any = {};
+        if (cajasTransferir) body.cajas = parseFloat(cajasTransferir);
+        await post(`/tarimas/confirmar-traspaso/${encodeURIComponent(qr)}`, body);
         notify("Traspaso confirmado", "success");
       } else if (action === "transfer-receive") {
         await post(`/tarimas/entregar/${encodeURIComponent(qr)}`);
@@ -89,6 +92,17 @@ export function ScanPage() {
           </button>
         )}
       </div>
+
+      {action === "confirm" && (
+        <div className="card">
+          <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 4 }}>
+            Cajas a transferir
+          </label>
+          <input className="input" type="number" step="1" min="1"
+            value={cajasTransferir} onChange={e => setCajasTransferir(e.target.value)}
+            placeholder="Dejar vacío = todas las cajas" style={{ width: "100%", boxSizing: "border-box" }} />
+        </div>
+      )}
 
       <div className="card">
         <p style={{ fontSize: 13, color: "#888", marginBottom: 8, textAlign: "center" }}>
