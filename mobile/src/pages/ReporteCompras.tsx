@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { IonPage, IonContent, IonCard, IonCardContent, IonText, IonItem, IonLabel, IonList } from "@ionic/react";
 import { get } from "../services/api";
@@ -57,7 +58,7 @@ export function ReporteCompras() {
                 <IonCard style={{ background: "#e8f5e9" }}>
                     <IonCardContent>
                         <IonText color="medium"><p style={{ fontSize: 12, margin: 0 }}>Total compras</p></IonText>
-                        <h2 style={{ color: "#1a8a3a", margin: "4px 0 0", fontSize: 22, fontWeight: "bold" }}>${totalCompras.toFixed(2)}</h2>
+                        <h2 style={{ color: "#1a8a3a", margin: "4px 0 0", fontSize: 22, fontWeight: "bold" }}>${money(totalCompras)}</h2>
                     </IonCardContent>
                 </IonCard>
 
@@ -78,7 +79,7 @@ export function ReporteCompras() {
                                         </IonLabel>
                                         <IonLabel slot="end" style={{ textAlign: "right" }}>
                                             <div style={{ fontWeight: "bold", color: "#1a8a3a" }}>
-                                                ${parseFloat(c.total || 0).toFixed(2)}
+                                                ${money(c.total || 0)}
                                             </div>
                                         </IonLabel>
                                     </IonItem>
@@ -91,3 +92,4 @@ export function ReporteCompras() {
         </IonPage>
     );
 }
+

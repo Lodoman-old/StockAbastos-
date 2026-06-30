@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { IonList, IonItem, IonLabel, IonButton, IonInput, IonSelect, IonSelectOption, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonPage, IonText, IonDatetime } from "@ionic/react";
 import { get, post, del } from "../services/api";
@@ -44,7 +45,7 @@ export function Gastos() {
                 </div>
 
                 <IonItem style={{ marginBottom: 8 }}>
-                    <IonLabel><strong>Total gastado: ${total.toFixed(2)}</strong></IonLabel>
+                    <IonLabel><strong>Total gastado: ${money(total)}</strong></IonLabel>
                 </IonItem>
 
                 <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
@@ -72,7 +73,7 @@ export function Gastos() {
                     {gastos.map(g => (
                         <IonItem key={g.id}>
                             <IonLabel>
-                                <h3>{g.concepto} — ${parseFloat(g.monto).toFixed(2)}</h3>
+                                <h3>{g.concepto} — ${money(g.monto)}</h3>
                                 <p>{new Date(g.fecha).toLocaleDateString()} {g.categoria ? `— ${g.categoria}` : ""}</p>
                             </IonLabel>
                             <IonButton slot="end" color="danger" fill="outline" size="small" onClick={() => eliminar(g.id)}>Eliminar</IonButton>
@@ -84,3 +85,4 @@ export function Gastos() {
         </IonPage>
     );
 }
+

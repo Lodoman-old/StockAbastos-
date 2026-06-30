@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, put } from "../services/api";
-
 export function PrestamoCajas() {
     const [prestamos, setPrestamos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -84,10 +84,12 @@ export function PrestamoCajas() {
                     </div>
                     <div style={{ fontSize: 11, color: "#999", marginTop: 8 }}>
                         {new Date(p.fecha_prestamo).toLocaleDateString()}
-                        {p.deposito_por_caja > 0 && ` · Depósito: $${parseFloat(p.deposito_por_caja).toFixed(2)}/caja`}
+                        {p.deposito_por_caja > 0 && ` · Depósito: $${money(p.deposito_por_caja)}/caja`}
                     </div>
                 </div>
             ))}
         </div>
     );
 }
+
+

@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get } from "../services/api";
 import {
@@ -185,8 +186,8 @@ export function Dashboard() {
                                     <tr key={c.id} style={{ borderBottom: "1px solid #eee" }}>
                                         <td style={{ padding: 8, fontWeight: "bold" }}>{c.cliente}</td>
                                         <td style={{ padding: 8 }}>{c.folio}</td>
-                                        <td style={{ padding: 8 }}>${parseFloat(c.total || 0).toFixed(2)}</td>
-                                        <td style={{ padding: 8, color: "#d32f2f", fontWeight: "bold" }}>${parseFloat(c.saldo_pendiente || 0).toFixed(2)}</td>
+                                        <td style={{ padding: 8 }}>${money(c.total || 0)}</td>
+                                        <td style={{ padding: 8, color: "#d32f2f", fontWeight: "bold" }}>${money(c.saldo_pendiente || 0)}</td>
                                         <td style={{ padding: 8 }}>{c.fecha_vencimiento ? new Date(c.fecha_vencimiento).toLocaleDateString() : "-"}</td>
                                     </tr>
                                 ))}
@@ -198,3 +199,5 @@ export function Dashboard() {
         </div>
     );
 }
+
+

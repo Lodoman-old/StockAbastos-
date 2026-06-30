@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get } from "../services/api";
-
 export function ReporteCreditos() {
     const [creditos, setCreditos] = useState<any[]>([]);
     const [clientes, setClientes] = useState<any[]>([]);
@@ -60,11 +60,11 @@ export function ReporteCreditos() {
             <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
                 <div style={{ background: "#fff8e1", borderRadius: 8, padding: "10px 16px" }}>
                     <span style={{ fontSize: 12, color: "#555" }}>Total vendido</span>
-                    <div style={{ fontSize: 22, fontWeight: "bold", color: "#ff9800" }}>${totalVendido.toFixed(2)}</div>
+                    <div style={{ fontSize: 22, fontWeight: "bold", color: "#ff9800" }}>${money(totalVendido)}</div>
                 </div>
                 <div style={{ background: "#fef2f2", borderRadius: 8, padding: "10px 16px" }}>
                     <span style={{ fontSize: 12, color: "#555" }}>Pendiente</span>
-                    <div style={{ fontSize: 22, fontWeight: "bold", color: "#d32f2f" }}>${totalPendiente.toFixed(2)}</div>
+                    <div style={{ fontSize: 22, fontWeight: "bold", color: "#d32f2f" }}>${money(totalPendiente)}</div>
                 </div>
             </div>
 
@@ -90,9 +90,9 @@ export function ReporteCreditos() {
                                     <td style={{ padding: 10, fontSize: 12, whiteSpace: "nowrap" }}>{new Date(c.created_at).toLocaleDateString()}</td>
                                     <td style={{ padding: 10, fontSize: 12 }}>{c.cliente_nombre || c.cliente}</td>
                                     <td style={{ padding: 10, fontSize: 12 }}>{c.cliente_telefono || "-"}</td>
-                                    <td style={{ padding: 10, fontSize: 12 }}>${parseFloat(c.total || 0).toFixed(2)}</td>
+                                    <td style={{ padding: 10, fontSize: 12 }}>${money(c.total || 0)}</td>
                                     <td style={{ padding: 10, fontSize: 12, fontWeight: "bold", color: parseFloat(c.saldo_pendiente || 0) > 0 ? "#d32f2f" : "#4caf50" }}>
-                                        ${parseFloat(c.saldo_pendiente || 0).toFixed(2)}
+                                        ${money(c.saldo_pendiente || 0)}
                                     </td>
                                     <td style={{ padding: 10, fontSize: 12, whiteSpace: "nowrap" }}>{vence ? vence.toLocaleDateString() : "-"}</td>
                                     <td style={{ padding: 10, fontSize: 12, fontWeight: "bold", color: vencido ? "#d32f2f" : porVencer ? "#ff9800" : "#4caf50" }}>
@@ -131,11 +131,11 @@ export function ReporteCreditos() {
                         <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
                             <div style={{ flex: 1, background: "#fff8e1", borderRadius: 8, padding: "8px 12px", textAlign: "center" }}>
                                 <div style={{ fontSize: 11, color: "#666" }}>Total</div>
-                                <div style={{ fontSize: 18, fontWeight: "bold", color: "#ff9800" }}>${parseFloat(showPagos.total || 0).toFixed(2)}</div>
+                                <div style={{ fontSize: 18, fontWeight: "bold", color: "#ff9800" }}>${money(showPagos.total || 0)}</div>
                             </div>
                             <div style={{ flex: 1, background: "#fef2f2", borderRadius: 8, padding: "8px 12px", textAlign: "center" }}>
                                 <div style={{ fontSize: 11, color: "#666" }}>Pendiente</div>
-                                <div style={{ fontSize: 18, fontWeight: "bold", color: "#d32f2f" }}>${parseFloat(showPagos.saldo_pendiente || 0).toFixed(2)}</div>
+                                <div style={{ fontSize: 18, fontWeight: "bold", color: "#d32f2f" }}>${money(showPagos.saldo_pendiente || 0)}</div>
                             </div>
                         </div>
 
@@ -153,7 +153,7 @@ export function ReporteCreditos() {
                                         <tr key={p.id} style={{ borderTop: "1px solid #eee" }}>
                                             <td style={{ padding: "6px 8px" }}>{new Date(p.fecha).toLocaleDateString()}</td>
                                             <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: "bold", color: "#1a8a3a" }}>
-                                                +${parseFloat(p.monto).toFixed(2)}
+                                                +${money(p.monto)}
                                             </td>
                                         </tr>
                                     ))}
@@ -166,7 +166,7 @@ export function ReporteCreditos() {
                         <div style={{ fontSize: 12, color: "#888", marginTop: 12, textAlign: "center" }}>
                             {parseFloat(showPagos.saldo_pendiente || 0) <= 0
                                 ? "✓ Crédito liquidado"
-                                : `Saldo pendiente: $${parseFloat(showPagos.saldo_pendiente).toFixed(2)}`}
+                                : `Saldo pendiente: $${money(showPagos.saldo_pendiente)}`}
                         </div>
                     </div>
                 </div>
@@ -174,3 +174,5 @@ export function ReporteCreditos() {
         </div>
     );
 }
+
+

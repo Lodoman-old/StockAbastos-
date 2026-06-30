@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get } from "../services/api";
-
 function downloadCsv(filename: string, columns: string[], rows: string[][]) {
     const csv = [columns.join(","), ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -86,7 +86,7 @@ export function Reportes() {
             </Card>
 
             <Card title="Ingresos mensuales (últimos 12 meses)"
-                onExport={() => downloadCsv("ingresos-mensuales.csv", ["Mes", "Ventas", "Ingresos"], (data.ingresos_mensuales || []).map((m: any) => [m.mes, String(m.ventas), `$${parseFloat(m.ingresos).toFixed(2)}`]))}>
+                onExport={() => downloadCsv("ingresos-mensuales.csv", ["Mes", "Ventas", "Ingresos"], (data.ingresos_mensuales || []).map((m: any) => [m.mes, String(m.ventas), `$${money(m.ingresos)}`]))}>
                 {(data.ingresos_mensuales || []).map((m: any) => (
                     <Bar key={m.mes} label={m.mes} value={parseFloat(m.ingresos)} max={maxIngreso} suffix="" color="#1976d2" />
                 ))}
@@ -95,11 +95,11 @@ export function Reportes() {
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24, marginBottom: 24 }}>
                 <Card title="Ventas por tipo de pago (90 días)"
-                    onExport={() => downloadCsv("ventas-tipo-pago.csv", ["Tipo", "Ventas", "Total"], (data.ventas_por_tipo_pago || []).map((t: any) => [t.tipo_pago, String(t.count), `$${parseFloat(t.total).toFixed(2)}`]))}>
+                    onExport={() => downloadCsv("ventas-tipo-pago.csv", ["Tipo", "Ventas", "Total"], (data.ventas_por_tipo_pago || []).map((t: any) => [t.tipo_pago, String(t.count), `$${money(t.total)}`]))}>
                     {(data.ventas_por_tipo_pago || []).map((t: any) => (
                         <div key={t.tipo_pago} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #f0f0f0", fontSize: 13 }}>
                             <span style={{ textTransform: "capitalize" }}>{t.tipo_pago}</span>
-                            <span><strong>{t.count}</strong> ventas — ${parseFloat(t.total).toFixed(2)}</span>
+                            <span><strong>{t.count}</strong> ventas — ${money(t.total)}</span>
                         </div>
                     ))}
                     {!data.ventas_por_tipo_pago?.length && <p style={{ color: "#888", fontSize: 13 }}>Sin datos</p>}
@@ -127,3 +127,5 @@ export function Reportes() {
         </div>
     );
 }
+
+

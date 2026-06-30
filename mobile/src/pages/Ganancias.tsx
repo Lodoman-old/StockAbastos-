@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { IonPage, IonContent, IonCard, IonCardContent, IonText, IonItem, IonLabel, IonList } from "@ionic/react";
 import { get } from "../services/api";
@@ -30,7 +31,7 @@ export function Ganancias() {
         <IonCard style={{ borderTop: `4px solid ${color}`, margin: "8px 0" }}>
             <IonCardContent>
                 <IonText color="medium"><p style={{ fontSize: 13, margin: 0 }}>{label}</p></IonText>
-                <h2 style={{ color, margin: "4px 0 0", fontSize: 22, fontWeight: "bold" }}>${value.toFixed(2)}</h2>
+                <h2 style={{ color, margin: "4px 0 0", fontSize: 22, fontWeight: "bold" }}>${money(value)}</h2>
             </IonCardContent>
         </IonCard>
     );
@@ -78,15 +79,15 @@ export function Ganancias() {
                                             <IonLabel>
                                                 <div style={{ fontSize: 14, fontWeight: "bold" }}>{d.producto}</div>
                                                 <div style={{ fontSize: 11, color: "#666" }}>
-                                                    Venta: ${parseFloat(d.subtotal_venta || 0).toFixed(2)}
+                                                    Venta: ${money(d.subtotal_venta || 0)}
                                                 </div>
                                                 <div style={{ fontSize: 11, color: "#666" }}>
-                                                    Costo: ${parseFloat(d.costo_total || 0).toFixed(2)}
+                                                    Costo: ${money(d.costo_total || 0)}
                                                 </div>
                                             </IonLabel>
                                             <IonLabel slot="end" style={{ textAlign: "right" }}>
                                                 <div style={{ fontSize: 15, fontWeight: "bold", color: ganancia >= 0 ? "#4caf50" : "#f44336" }}>
-                                                    ${ganancia.toFixed(2)}
+                                                    ${money(ganancia)}
                                                 </div>
                                                 <div style={{ fontSize: 10, color: "#999" }}>{d.folio}</div>
                                             </IonLabel>
@@ -103,3 +104,4 @@ export function Ganancias() {
         </IonPage>
     );
 }
+

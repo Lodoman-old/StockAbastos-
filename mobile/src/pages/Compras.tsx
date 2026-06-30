@@ -1,3 +1,4 @@
+import { money } from "../format";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { get, post } from "../services/api";
@@ -217,7 +218,7 @@ export function Compras() {
                 <div style={{ display: "grid", gap: 8 }}>
                     {compras.map(c => (
                         <div key={c.id} className="card" style={{ padding: "12px 16px" }}>
-                            <div style={{ fontWeight: "bold", fontSize: 15 }}>{c.proveedor || "Sin proveedor"} — ${parseFloat(c.total || 0).toFixed(2)}</div>
+                            <div style={{ fontWeight: "bold", fontSize: 15 }}>{c.proveedor || "Sin proveedor"} — ${money(c.total || 0)}</div>
                             <div style={{ fontSize: 13, color: "#888" }}>{new Date(c.fecha).toLocaleDateString()} — {c.detalles?.length || 0} producto(s)</div>
                         </div>
                     ))}

@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { get, post } from "../services/api";
@@ -357,7 +358,7 @@ export function Ventas() {
                                             style={{ padding: "10px 12px", borderBottom: "1px solid #eee", cursor: "pointer", background: "#fafafa", borderRadius: 8, marginBottom: 4 }}>
                                             <div style={{ fontWeight: "bold", fontSize: 14 }}>{c.cliente_nombre || "Sin nombre"}</div>
                                             <div style={{ fontSize: 12, color: "#666" }}>
-                                                Folio: {c.folio} — Saldo: <strong style={{ color: "#d32f2f" }}>${parseFloat(c.saldo_pendiente).toFixed(2)}</strong>
+                                                Folio: {c.folio} — Saldo: <strong style={{ color: "#d32f2f" }}>${money(c.saldo_pendiente)}</strong>
                                             </div>
                                         </div>
                                     ))}
@@ -369,7 +370,7 @@ export function Ventas() {
                                     <div style={{ fontWeight: "bold", fontSize: 14 }}>{cobrosSel.cliente_nombre || "Sin nombre"}</div>
                                     <div style={{ color: "#555", marginTop: 2 }}>Folio: {cobrosSel.folio}</div>
                                     <div style={{ fontWeight: "bold", marginTop: 4, color: "#d32f2f", fontSize: 16 }}>
-                                        Saldo: ${parseFloat(cobrosSel.saldo_pendiente).toFixed(2)}
+                                        Saldo: ${money(cobrosSel.saldo_pendiente)}
                                     </div>
                                 </div>
                                 {cobrosPagos.length > 0 && (
@@ -378,7 +379,7 @@ export function Ventas() {
                                         {cobrosPagos.map((p: any) => (
                                             <div key={p.id} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0" }}>
                                                 <span>{new Date(p.fecha).toLocaleDateString()}</span>
-                                                <span style={{ color: "#1a8a3a" }}>${parseFloat(p.monto).toFixed(2)}</span>
+                                                <span style={{ color: "#1a8a3a" }}>${money(p.monto)}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -499,7 +500,7 @@ export function Ventas() {
 
             {items.length > 0 && (
                 <div style={{ textAlign: "right", padding: "8px 0", fontSize: 20, fontWeight: "bold", borderTop: "2px solid #eee", marginTop: 8 }}>
-                    Total: ${subtotal.toFixed(2)}
+                    Total: ${money(subtotal)}
                 </div>
             )}
 
@@ -571,3 +572,4 @@ export function Ventas() {
         </div>
     );
 }
+

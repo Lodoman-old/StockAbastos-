@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, post } from "../services/api";
-
 export function CorteDeCaja() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -53,11 +53,11 @@ export function CorteDeCaja() {
     const retirar = async () => {
         const m = parseFloat(montoRetiro);
         if (!m || m <= 0) { setMsg("Ingresa un monto válido"); return; }
-        if (!confirm(`¿Retirar $${m.toFixed(2)} de la caja?${motivoRetiro ? ` (${motivoRetiro})` : ""}`)) return;
+        if (!confirm(`¿Retirar $${money(m)} de la caja?${motivoRetiro ? ` (${motivoRetiro})` : ""}`)) return;
         setMsg("Registrando retiro...");
         try {
             await post("/cortes/retiro", { monto: m, motivo: motivoRetiro });
-            setMsg(`Retiro de $${m.toFixed(2)} registrado`);
+            setMsg(`Retiro de $${money(m)} registrado`);
             setShowRetiro(false);
             setMontoRetiro("");
             setMotivoRetiro("");
@@ -107,7 +107,7 @@ export function CorteDeCaja() {
             {data?.abierto && (
                 <div style={{ background: "#e3f2fd", color: "#1565c0", padding: 12, borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
                     Caja abierta {data.corte?.abierto_at ? `a las ${new Date(data.corte.abierto_at).toLocaleTimeString()}` : ""}
-                    {data.monto_inicial > 0 && <span> — Monto inicial: ${data.monto_inicial.toFixed(2)}</span>}
+                    {data.monto_inicial > 0 && <span> — Monto inicial: ${money(data.monto_inicial)}</span>}
                 </div>
             )}
 
@@ -313,3 +313,5 @@ export function CorteDeCaja() {
         </div>
     );
 }
+
+

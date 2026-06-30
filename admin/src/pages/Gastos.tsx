@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, post, del } from "../services/api";
-
 const CATEGORIAS = ["Luz", "Agua", "Nómina", "Renta", "Transporte", "Mantenimiento", "Otro"];
 
 export function Gastos() {
@@ -82,7 +82,7 @@ export function Gastos() {
             )}
 
             <div style={{ background: "#fff", borderRadius: 12, padding: 16, marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.08)", textAlign: "right", fontSize: 18, fontWeight: "bold", color: "#f44336" }}>
-                Total gastado: ${total.toFixed(2)}
+                Total gastado: ${money(total)}
             </div>
 
             <div style={{ overflowX: "auto" }}>
@@ -102,7 +102,7 @@ export function Gastos() {
                                 <td style={{ padding: 12 }}>{new Date(g.fecha).toLocaleDateString()}</td>
                                 <td style={{ padding: 12 }}>{g.concepto}</td>
                                 <td style={{ padding: 12 }}>{g.categoria || "-"}</td>
-                                <td style={{ padding: 12, fontWeight: "bold" }}>${parseFloat(g.monto).toFixed(2)}</td>
+                                <td style={{ padding: 12, fontWeight: "bold" }}>${money(g.monto)}</td>
                                 <td style={{ padding: 12 }}>
                                     <button onClick={() => eliminar(g.id)} style={{ background: "none", border: "1px solid #f44336", color: "#f44336", borderRadius: 4, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}>Eliminar</button>
                                 </td>
@@ -114,3 +114,5 @@ export function Gastos() {
         </div>
     );
 }
+
+

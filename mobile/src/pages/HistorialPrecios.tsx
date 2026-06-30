@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { get } from "../services/api";
@@ -44,10 +45,10 @@ export function HistorialPrecios() {
                                 <div key={h.fecha} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #f0f0f0", fontSize: 12 }}>
                                     <span style={{ color: "#888" }}>{h.fecha}</span>
                                     <span>
-                                        <strong>${parseFloat(h.precio_kg).toFixed(2)}</strong>
+                                        <strong>${money(h.precio_kg)}</strong>
                                         {diff !== 0 && (
                                             <span style={{ color: diff > 0 ? "#d32f2f" : "#1a8a3a", marginLeft: 4 }}>
-                                                {diff > 0 ? "▲" : "▼"} ${Math.abs(diff).toFixed(2)}
+                                                {diff > 0 ? "▲" : "▼"} ${money(Math.abs(diff))}
                                             </span>
                                         )}
                                     </span>
@@ -57,7 +58,7 @@ export function HistorialPrecios() {
                     )}
                     {historial.length > 0 && (
                         <div style={{ marginTop: 8, fontSize: 11, color: "#888", paddingTop: 8, borderTop: "1px solid #eee" }}>
-                            Base: <strong>${parseFloat(historial[0]?.precio_base_kg || 0).toFixed(2)}</strong>/kg
+                            Base: <strong>${money(historial[0]?.precio_base_kg || 0)}</strong>/kg
                         </div>
                     )}
                 </div>
@@ -65,3 +66,4 @@ export function HistorialPrecios() {
         </div></>
     );
 }
+

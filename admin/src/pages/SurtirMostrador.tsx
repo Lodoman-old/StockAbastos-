@@ -1,7 +1,7 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, post } from "../services/api";
 import { notify } from "../components/Toast";
-
 export function SurtirMostrador() {
     const [stock, setStock] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -82,7 +82,7 @@ export function SurtirMostrador() {
             const body: any = { tarima_id: t.tarima_id, cajas };
             if (t.modalidad_caja_pesada) body.peso_bruto = pesoInput[t.tarima_id] || 0;
             const res = await post("/mostrador/surtir-desde-tarima", body);
-            notify(`Surtido: ${res.kg_calculados.toFixed(2)} kg (${cajas} caja(s))`, "success");
+            notify(`Surtido: ${money(res.kg_calculados)} kg (${cajas} caja(s))`, "success");
             loadStock();
             const data = await get(`/mostrador/tarimas-disponibles/${bodegaId}`);
             setTarimas(data);
@@ -199,7 +199,7 @@ export function SurtirMostrador() {
                                 <tr key={s.id} style={{ borderTop: "1px solid #eee" }}>
                                     <td style={{ padding: 10 }}>{s.producto_nombre}</td>
                                     <td style={{ padding: 10 }}>{s.sku}</td>
-                                    <td style={{ padding: 10 }}>{s.cantidad_kg ? `${Number(s.cantidad_kg).toFixed(2)} kg` : "-"}</td>
+                                    <td style={{ padding: 10 }}>{s.cantidad_kg ? `${money(s.cantidad_kg)} kg` : "-"}</td>
                                     <td style={{ padding: 10 }}>
                                         {ajusteId === s.id ? (
                                             <input type="number" step="1" min="0" value={ajustePz}
@@ -208,8 +208,8 @@ export function SurtirMostrador() {
                                         ) : (s.cantidad_piezas || "-")}
                                     </td>
                                     <td style={{ padding: 10 }}>
-                                        {s.modalidad_kilo_suelto && s.precio_menudeo_kg ? `$${Number(s.precio_menudeo_kg).toFixed(2)}/kg` : ""}
-                                        {s.modalidad_unidad && s.precio_por_unidad ? `$${Number(s.precio_por_unidad).toFixed(2)}/pz` : ""}
+                                        {s.modalidad_kilo_suelto && s.precio_menudeo_kg ? `$${money(s.precio_menudeo_kg)}/kg` : ""}
+                                        {s.modalidad_unidad && s.precio_por_unidad ? `$${money(s.precio_por_unidad)}/pz` : ""}
                                     </td>
                                     <td style={{ padding: 10 }}>
                                         {ajusteId === s.id ? (
@@ -294,7 +294,7 @@ export function SurtirMostrador() {
                                                     {kg > 0 ? kg.toFixed(2) : "-"}
                                                 </td>
                                                 <td style={{ padding: 6, textAlign: "center", color: "#1a8a3a", fontWeight: "bold" }}>
-                                                    {costo > 0 ? `$${costo.toFixed(2)}` : "-"}
+                                                    {costo > 0 ? `$${money(costo)}` : "-"}
                                                 </td>
                                                 <td style={{ padding: 6, textAlign: "center" }}>
                                                     <button onClick={() => surtirDesdeTarima(t)}
@@ -316,3 +316,5 @@ export function SurtirMostrador() {
         </div>
     );
 }
+
+

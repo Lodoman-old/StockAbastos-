@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get } from "../services/api";
-
 export function Ganancias() {
     const [detalles, setDetalles] = useState<any[]>([]);
     const [resumen, setResumen] = useState<any>(null);
@@ -57,11 +57,11 @@ export function Ganancias() {
             <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: 24 }}>
                 <div style={{ ...card, borderTop: "4px solid #4caf50" }}>
                     <h3 style={{ fontSize: 13, color: "#666", margin: 0 }}>Ventas totales</h3>
-                    <p style={{ fontSize: 28, fontWeight: "bold", margin: "8px 0 0", color: "#4caf50" }}>${sumaVentas.toFixed(2)}</p>
+                    <p style={{ fontSize: 28, fontWeight: "bold", margin: "8px 0 0", color: "#4caf50" }}>${money(sumaVentas)}</p>
                 </div>
                 <div style={{ ...card, borderTop: "4px solid #f44336" }}>
                     <h3 style={{ fontSize: 13, color: "#666", margin: 0 }}>Costo de ventas</h3>
-                    <p style={{ fontSize: 28, fontWeight: "bold", margin: "8px 0 0", color: "#f44336" }}>${sumaCostos.toFixed(2)}</p>
+                    <p style={{ fontSize: 28, fontWeight: "bold", margin: "8px 0 0", color: "#f44336" }}>${money(sumaCostos)}</p>
                 </div>
                 <div style={{ ...card, borderTop: "4px solid #ff9800" }}>
                     <h3 style={{ fontSize: 13, color: "#666", margin: 0 }}>Gastos</h3>
@@ -94,13 +94,13 @@ export function Ganancias() {
                                     <td style={{ padding: 10, fontSize: 12, whiteSpace: "nowrap" }}>{new Date(d.fecha).toLocaleDateString()}</td>
                                     <td style={{ padding: 10, fontSize: 12 }}>{d.producto}</td>
                                     <td style={{ padding: 10, fontSize: 12 }}>
-                                        {d.unidad_venta === "PIEZA" ? `${d.cantidad_unidades || 0} pz` : `${parseFloat(d.cantidad_kg || 0).toFixed(2)} kg`}
+                                        {d.unidad_venta === "PIEZA" ? `${d.cantidad_unidades || 0} pz` : `${money(d.cantidad_kg || 0)} kg`}
                                     </td>
-                                    <td style={{ padding: 10, fontSize: 12 }}>${parseFloat(d.precio_unitario || 0).toFixed(2)}</td>
-                                    <td style={{ padding: 10, fontSize: 12 }}>${parseFloat(d.subtotal_venta || 0).toFixed(2)}</td>
-                                    <td style={{ padding: 10, fontSize: 12 }}>${parseFloat(d.costo_total || 0).toFixed(2)}</td>
+                                    <td style={{ padding: 10, fontSize: 12 }}>${money(d.precio_unitario || 0)}</td>
+                                    <td style={{ padding: 10, fontSize: 12 }}>${money(d.subtotal_venta || 0)}</td>
+                                    <td style={{ padding: 10, fontSize: 12 }}>${money(d.costo_total || 0)}</td>
                                     <td style={{ padding: 10, fontSize: 12, fontWeight: "bold", color: ganancia >= 0 ? "#4caf50" : "#f44336" }}>
-                                        ${ganancia.toFixed(2)}
+                                        ${money(ganancia)}
                                     </td>
                                 </tr>
                             );
@@ -111,3 +111,5 @@ export function Ganancias() {
         </div>
     );
 }
+
+

@@ -1,7 +1,7 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, post } from "../services/api";
 import { notify } from "../components/Toast";
-
 export function Ventas() {
     const [ventas, setVentas] = useState<any[]>([]);
     const [totales, setTotales] = useState<any>(null);
@@ -90,11 +90,11 @@ export function Ventas() {
                             <tr key={v.id} style={{ borderTop: "1px solid #eee" }}>
                                 <td style={{ padding: 12 }}><strong>{v.folio}</strong></td>
                                 <td style={{ padding: 12 }}>{v.bodega_nombre}</td>
-                                <td style={{ padding: 12, fontWeight: "bold" }}>${parseFloat(v.total || 0).toFixed(2)}</td>
+                                <td style={{ padding: 12, fontWeight: "bold" }}>${money(v.total || 0)}</td>
                                 <td style={{ padding: 12 }}>
                                     {v.tipo_pago === "credito" ? (
                                         <span style={{ color: "#ff9800", fontWeight: "bold" }}>
-                                            Crédito {v.saldo_pendiente > 0 ? `($${parseFloat(v.saldo_pendiente).toFixed(2)})` : "(pagado)"}
+                                            Crédito {v.saldo_pendiente > 0 ? `($${money(v.saldo_pendiente)})` : "(pagado)"}
                                         </span>
                                     ) : <span style={{ color: "#4caf50" }}>Contado</span>}
                                 </td>
@@ -387,8 +387,8 @@ function POSFormMayoreo({ onClose, onDone }: { onClose: () => void; onDone: () =
 
                                             </td>
                                             <td data-label="Precio" style={{ padding: "5px 4px", textAlign: "center", fontSize: 11, color: "#555" }}>
-                                                {p.modalidad_caja_pesada && `$${Number(p.precio_mayoreo_kg_hoy || p.precio_mayoreo_kg).toFixed(2)}/kg`}
-                                                {p.modalidad_caja_sellada && !p.modalidad_caja_pesada && `$${Number(p.precio_caja_sellada_hoy || p.precio_caja_sellada).toFixed(2)}`}
+                                                {p.modalidad_caja_pesada && `$${money(p.precio_mayoreo_kg_hoy || p.precio_mayoreo_kg)}/kg`}
+                                                {p.modalidad_caja_sellada && !p.modalidad_caja_pesada && `$${money(p.precio_caja_sellada_hoy || p.precio_caja_sellada)}`}
                                             </td>
                                             <td data-label="Acción" style={{ padding: "5px 4px", textAlign: "center" }}>
                                                 <div style={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
@@ -483,10 +483,10 @@ function POSFormMayoreo({ onClose, onDone }: { onClose: () => void; onDone: () =
                                                             onChange={e => updateItemPrecio(i, parseFloat(e.target.value) || 0)}
                                                             style={{ width: 60, padding: "2px 4px", border: "2px solid #ff9800", borderRadius: 4, fontSize: 11, fontWeight: "bold", textAlign: "right" }} />
                                                     ) : (
-                                                        <div style={{ fontWeight: "bold", fontSize: 13, color: "#1a8a3a" }}>${it.subtotal.toFixed(2)}</div>
+                                                        <div style={{ fontWeight: "bold", fontSize: 13, color: "#1a8a3a" }}>${money(it.subtotal)}</div>
                                                     )}
                                                     <div style={{ fontSize: 9, color: "#999" }}>
-                                                        {it.precioManual ? "" : it.modalidad === "caja_pesada" ? `$${it.precio_unitario.toFixed(2)}/kg` : `$${it.precio_unitario.toFixed(2)}`}
+                                                        {it.precioManual ? "" : it.modalidad === "caja_pesada" ? `$${money(it.precio_unitario)}/kg` : `$${money(it.precio_unitario)}`}
                                                     </div>
                                                 </td>
                                                 <td data-label="" style={{ padding: "4px" }}>
@@ -521,7 +521,7 @@ function POSFormMayoreo({ onClose, onDone }: { onClose: () => void; onDone: () =
 
                 <div style={{ padding: "10px 20px 16px 20px", borderTop: "2px solid #eee", flexShrink: 0, background: "#fff" }}>
                     {items.length > 0 && (
-                        <div style={{ textAlign: "right", fontSize: 20, fontWeight: "bold", marginBottom: 6 }}>Total: ${subtotal.toFixed(2)}</div>
+                        <div style={{ textAlign: "right", fontSize: 20, fontWeight: "bold", marginBottom: 6 }}>Total: ${money(subtotal)}</div>
                     )}
                     {tipoPago === "contado" && items.length > 0 && (
                         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
@@ -543,7 +543,7 @@ function POSFormMayoreo({ onClose, onDone }: { onClose: () => void; onDone: () =
                     <div className="btn-group" style={{ display: "flex", gap: 8 }}>
                         <button onClick={handleSubmit} disabled={!items.length || (tipoPago === "credito" && !clienteId) || (tipoPago === "contado" && (parseFloat(montoRecibido) || 0) < subtotal)}
                             style={{ flex: 1, padding: 10, background: items.length && !(tipoPago === "credito" && !clienteId) && !(tipoPago === "contado" && (parseFloat(montoRecibido) || 0) < subtotal) ? "#1a8a3a" : "#ccc", color: "#fff", border: "none", borderRadius: 8, cursor: items.length && !(tipoPago === "credito" && !clienteId) && !(tipoPago === "contado" && (parseFloat(montoRecibido) || 0) < subtotal) ? "pointer" : "not-allowed", fontSize: 14, fontWeight: "bold" }}>
-                            Cobrar ${subtotal.toFixed(2)}
+                            Cobrar ${money(subtotal)}
                         </button>
                         {items.length > 0 && <button onClick={handlePause} style={{ background: "#ff9800", color: "#fff", border: "none", borderRadius: 8, padding: "10px 14px", cursor: "pointer", fontSize: 13, fontWeight: "bold" }}>Pausar</button>}
                         <button onClick={onClose} style={{ background: "#ccc", border: "none", borderRadius: 8, padding: "10px 14px", cursor: "pointer", fontSize: 13 }}>Cancelar</button>
@@ -594,7 +594,7 @@ function CobrosModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
                         {filtered.map(c => (
                             <div key={c.venta_id} onClick={() => selectVenta(c)} style={{ padding: "10px 12px", borderBottom: "1px solid #eee", cursor: "pointer", background: "#fafafa", borderRadius: 8, marginBottom: 4 }}>
                                 <div style={{ fontWeight: "bold", fontSize: 14 }}>{c.cliente_nombre || "Sin nombre"}</div>
-                                <div style={{ fontSize: 12, color: "#666" }}>Folio: {c.folio} — <strong style={{ color: "#d32f2f" }}>$${parseFloat(c.saldo_pendiente).toFixed(2)}</strong></div>
+                                <div style={{ fontSize: 12, color: "#666" }}>Folio: {c.folio} — <strong style={{ color: "#d32f2f" }}>$${money(c.saldo_pendiente)}</strong></div>
                                 <div style={{ fontSize: 11, color: "#999" }}>Vence: {c.fecha_vencimiento ? new Date(c.fecha_vencimiento).toLocaleDateString("es-MX") : "N/A"}</div>
                             </div>
                         ))}
@@ -604,12 +604,12 @@ function CobrosModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
                     <>
                         <div style={{ background: "#fff3e0", borderRadius: 8, padding: 12, marginBottom: 12 }}>
                             <div style={{ fontWeight: "bold", fontSize: 15 }}>{selected.cliente_nombre}</div>
-                            <div style={{ fontSize: 13, color: "#555", marginTop: 4 }}>Folio: {selected.folio} | ${parseFloat(selected.total).toFixed(2)} | Vence: {selected.fecha_vencimiento ? new Date(selected.fecha_vencimiento).toLocaleDateString("es-MX") : "N/A"}</div>
-                            <div style={{ fontSize: 16, fontWeight: "bold", marginTop: 6, color: "#d32f2f" }}>Saldo: ${parseFloat(selected.saldo_pendiente).toFixed(2)}</div>
+                            <div style={{ fontSize: 13, color: "#555", marginTop: 4 }}>Folio: {selected.folio} | ${money(selected.total)} | Vence: {selected.fecha_vencimiento ? new Date(selected.fecha_vencimiento).toLocaleDateString("es-MX") : "N/A"}</div>
+                            <div style={{ fontSize: 16, fontWeight: "bold", marginTop: 6, color: "#d32f2f" }}>Saldo: ${money(selected.saldo_pendiente)}</div>
                         </div>
                         {pagosPrev.length > 0 && <div style={{ marginBottom: 12 }}>
                             <strong style={{ fontSize: 13 }}>Pagos anteriores:</strong>
-                            {pagosPrev.map((p: any) => <div key={p.id} style={{ fontSize: 12, color: "#555", marginTop: 4 }}>{new Date(p.fecha).toLocaleDateString("es-MX")} — ${parseFloat(p.monto).toFixed(2)}</div>)}
+                            {pagosPrev.map((p: any) => <div key={p.id} style={{ fontSize: 12, color: "#555", marginTop: 4 }}>{new Date(p.fecha).toLocaleDateString("es-MX")} — ${money(p.monto)}</div>)}
                         </div>}
                         <div style={{ marginBottom: 12 }}>
                             <label style={{ fontSize: 13 }}>Monto a pagar ($)</label>
@@ -627,3 +627,5 @@ function CobrosModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
         </div>
     );
 }
+
+

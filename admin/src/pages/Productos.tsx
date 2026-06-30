@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, post } from "../services/api";
-
 export function Productos() {
     const [productos, setProductos] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
@@ -219,13 +219,13 @@ export function Productos() {
                                             }}>{m}</span>
                                         ))}
                                     </td>
-                                    <td style={{ padding: 10 }}>{p.precio_mayoreo_kg ? `$${Number(p.precio_mayoreo_kg).toFixed(2)}` : "-"}</td>
+                                    <td style={{ padding: 10 }}>{p.precio_mayoreo_kg ? `$${money(p.precio_mayoreo_kg)}` : "-"}</td>
                                     <td style={{ padding: 10, fontSize: 12 }}>
-                                        {p.precio_caja_sellada ? `$${Number(p.precio_caja_sellada).toFixed(2)}` : "-"}
+                                        {p.precio_caja_sellada ? `$${money(p.precio_caja_sellada)}` : "-"}
                                         {p.peso_caja_sellada_kg ? ` (${p.peso_caja_sellada_kg}kg)` : ""}
                                     </td>
-                                    <td style={{ padding: 10 }}>{p.precio_menudeo_kg ? `$${Number(p.precio_menudeo_kg).toFixed(2)}` : "-"}</td>
-                                    <td style={{ padding: 10 }}>{p.precio_por_unidad ? `$${Number(p.precio_por_unidad).toFixed(2)}` : "-"}</td>
+                                    <td style={{ padding: 10 }}>{p.precio_menudeo_kg ? `$${money(p.precio_menudeo_kg)}` : "-"}</td>
+                                    <td style={{ padding: 10 }}>{p.precio_por_unidad ? `$${money(p.precio_por_unidad)}` : "-"}</td>
                                     <td style={{ padding: 10, fontSize: 12 }}>{p.codigo_de_barras || "-"}</td>
                                     <td style={{ padding: 10 }}>
                                         <button onClick={() => openEdit(p)}
@@ -242,3 +242,5 @@ export function Productos() {
         </div>
     );
 }
+
+

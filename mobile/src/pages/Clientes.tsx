@@ -1,3 +1,4 @@
+import { money } from "../format";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { get, post, put } from "../services/api";
@@ -58,7 +59,7 @@ export function Clientes() {
                 {clientes.map(c => (
                     <div key={c.id} className="card" onClick={() => openEdit(c)} style={{ cursor: "pointer", padding: "12px 16px" }}>
                         <div style={{ fontWeight: "bold", fontSize: 15 }}>{c.nombre}</div>
-                        <div style={{ fontSize: 13, color: "#888" }}>{c.telefono || "Sin teléfono"} — Límite: ${parseFloat(c.limite_credito || 0).toFixed(2)}</div>
+                        <div style={{ fontSize: 13, color: "#888" }}>{c.telefono || "Sin teléfono"} — Límite: ${money(c.limite_credito || 0)}</div>
                     </div>
                 ))}
                 {!clientes.length && <p style={{ color: "#888", textAlign: "center" }}>Sin clientes</p>}
@@ -66,3 +67,4 @@ export function Clientes() {
         </div></>
     );
 }
+

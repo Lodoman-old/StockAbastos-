@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { IonPage, IonContent, IonCard, IonCardContent, IonText, IonItem, IonLabel, IonList } from "@ionic/react";
 import { get, post } from "../services/api";
@@ -81,7 +82,7 @@ export function ReporteCreditos() {
                 <IonCard style={{ background: "#fef2f2" }}>
                     <IonCardContent>
                         <IonText color="medium"><p style={{ fontSize: 12, margin: 0 }}>Total pendiente</p></IonText>
-                        <h2 style={{ color: "#d32f2f", margin: "4px 0 0", fontSize: 22, fontWeight: "bold" }}>${totalPendiente.toFixed(2)}</h2>
+                        <h2 style={{ color: "#d32f2f", margin: "4px 0 0", fontSize: 22, fontWeight: "bold" }}>${money(totalPendiente)}</h2>
                     </IonCardContent>
                 </IonCard>
 
@@ -98,7 +99,7 @@ export function ReporteCreditos() {
                                             <IonLabel>
                                                 <div style={{ fontWeight: "bold", fontSize: 14 }}>{c.cliente_nombre || c.cliente || "Sin nombre"}</div>
                                                 <div style={{ fontSize: 11, color: "#666" }}>
-                                                    Folio: {c.folio} | ${parseFloat(c.total || 0).toFixed(2)}
+                                                    Folio: {c.folio} | ${money(c.total || 0)}
                                                 </div>
                                                 <div style={{ fontSize: 11, color: vencido ? "#d32f2f" : "#ff9800" }}>
                                                     {vence ? `Vence: ${vence.toLocaleDateString()}` : "Sin vencimiento"}
@@ -106,7 +107,7 @@ export function ReporteCreditos() {
                                             </IonLabel>
                                             <IonLabel slot="end" style={{ textAlign: "right" }}>
                                                 <div style={{ fontWeight: "bold", color: parseFloat(c.saldo_pendiente || 0) > 0 ? "#d32f2f" : "#4caf50" }}>
-                                                    ${parseFloat(c.saldo_pendiente || 0).toFixed(2)}
+                                                    ${money(c.saldo_pendiente || 0)}
                                                 </div>
                                                 <div style={{ fontSize: 10, color: vencido ? "#d32f2f" : "#999" }}>
                                                     {parseFloat(c.saldo_pendiente || 0) <= 0 ? "Pagado" : vencido ? "Vencido" : "Pendiente"}
@@ -138,11 +139,11 @@ export function ReporteCreditos() {
                             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                                 <div style={{ flex: 1, background: "#fff8e1", borderRadius: 8, padding: "6px 10px", textAlign: "center" }}>
                                     <div style={{ fontSize: 10, color: "#666" }}>Total</div>
-                                    <div style={{ fontSize: 16, fontWeight: "bold", color: "#ff9800" }}>${parseFloat(sel.total || 0).toFixed(2)}</div>
+                                    <div style={{ fontSize: 16, fontWeight: "bold", color: "#ff9800" }}>${money(sel.total || 0)}</div>
                                 </div>
                                 <div style={{ flex: 1, background: "#fef2f2", borderRadius: 8, padding: "6px 10px", textAlign: "center" }}>
                                     <div style={{ fontSize: 10, color: "#666" }}>Pendiente</div>
-                                    <div style={{ fontSize: 16, fontWeight: "bold", color: "#d32f2f" }}>${parseFloat(sel.saldo_pendiente || 0).toFixed(2)}</div>
+                                    <div style={{ fontSize: 16, fontWeight: "bold", color: "#d32f2f" }}>${money(sel.saldo_pendiente || 0)}</div>
                                 </div>
                             </div>
 
@@ -152,7 +153,7 @@ export function ReporteCreditos() {
                                     {pagos.map((p: any) => (
                                         <div key={p.id} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #eee" }}>
                                             <span>{new Date(p.fecha).toLocaleDateString()}</span>
-                                            <span style={{ fontWeight: "bold", color: "#1a8a3a" }}>+${parseFloat(p.monto).toFixed(2)}</span>
+                                            <span style={{ fontWeight: "bold", color: "#1a8a3a" }}>+${money(p.monto)}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -180,3 +181,4 @@ export function ReporteCreditos() {
         </IonPage>
     );
 }
+

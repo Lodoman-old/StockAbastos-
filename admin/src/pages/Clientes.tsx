@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, post, put } from "../services/api";
-
 export function Clientes() {
     const [clientes, setClientes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -85,7 +85,7 @@ export function Clientes() {
                                 <td style={{ padding: 12, fontWeight: "bold" }}>{c.nombre}</td>
                                 <td style={{ padding: 12 }}>{c.telefono || "-"}</td>
                                 <td style={{ padding: 12 }}>{c.direccion || "-"}</td>
-                                <td style={{ padding: 12 }}>${parseFloat(c.limite_credito || 0).toFixed(2)}</td>
+                                <td style={{ padding: 12 }}>${money(c.limite_credito || 0)}</td>
                                 <td style={{ padding: 12 }}>
                                     <button onClick={() => openEdit(c)} style={{ background: "none", border: "1px solid #2196f3", color: "#2196f3", borderRadius: 4, padding: "4px 12px", fontSize: 12, cursor: "pointer" }}>Editar</button>
                                 </td>
@@ -97,3 +97,5 @@ export function Clientes() {
         </div>
     );
 }
+
+

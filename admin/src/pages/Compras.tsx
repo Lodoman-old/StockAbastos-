@@ -1,9 +1,9 @@
+import { money } from "../format";
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { get, post, put, del } from "../services/api";
 import { notify } from "../components/Toast";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-
 const emptyForm = { producto_id: "", tarima_tipo_id: "", cantidad: "1", peso_kg: "", bodega_id: "", fecha_caducidad: "", compra_por_cajas: false, cajas_directas: "1" };
 
 export function Compras() {
@@ -306,11 +306,11 @@ export function Compras() {
                                 <td style={{ padding: 12 }}>
                                     {c.detalles?.map((d: any) => (
                                         <div key={d.id} style={{ fontSize: 12, marginBottom: 2 }}>
-                                            {d.producto_nombre} (${parseFloat(d.precio_compra || 0).toFixed(2)}/{d.modalidad_unidad ? 'unidad' : 'kg'})
+                                            {d.producto_nombre} (${money(d.precio_compra || 0)}/{d.modalidad_unidad ? 'unidad' : 'kg'})
                                         </div>
                                     ))}
                                 </td>
-                                <td style={{ padding: 12, fontWeight: "bold" }}>${parseFloat(c.total || 0).toFixed(2)}</td>
+                                <td style={{ padding: 12, fontWeight: "bold" }}>${money(c.total || 0)}</td>
                                 <td style={{ padding: 12, display: "flex", gap: 6 }}>
                                     <button onClick={() => setEditModal({ id: c.id, proveedor: c.proveedor || "", fecha: c.fecha ? new Date(c.fecha).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10), costo_total: c.total ? parseFloat(c.total).toFixed(2) : "" })}
                                         style={{ background: "none", border: "1px solid #ff9800", color: "#ff9800", borderRadius: 4, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}>Editar</button>
@@ -381,3 +381,5 @@ export function Compras() {
         </div>
     );
 }
+
+

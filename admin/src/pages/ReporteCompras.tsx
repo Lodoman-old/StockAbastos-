@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get } from "../services/api";
-
 export function ReporteCompras() {
     const [compras, setCompras] = useState<any[]>([]);
     const [desde, setDesde] = useState("");
@@ -47,7 +47,7 @@ export function ReporteCompras() {
 
             <div style={{ background: "#e8f5e9", borderRadius: 8, padding: "10px 16px", marginBottom: 16, display: "inline-block" }}>
                 <span style={{ fontSize: 12, color: "#555" }}>Total compras</span>
-                <div style={{ fontSize: 22, fontWeight: "bold", color: "#1a8a3a" }}>${total.toFixed(2)}</div>
+                <div style={{ fontSize: 22, fontWeight: "bold", color: "#1a8a3a" }}>${money(total)}</div>
             </div>
 
             <div style={{ overflowX: "auto" }}>
@@ -71,7 +71,7 @@ export function ReporteCompras() {
                                         </div>
                                     ))}
                                 </td>
-                                <td style={{ padding: 10, fontWeight: "bold" }}>${parseFloat(c.total || 0).toFixed(2)}</td>
+                                <td style={{ padding: 10, fontWeight: "bold" }}>${money(c.total || 0)}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -80,3 +80,5 @@ export function ReporteCompras() {
         </div>
     );
 }
+
+

@@ -1,6 +1,6 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get } from "../services/api";
-
 export function HistorialPrecios() {
     const [productos, setProductos] = useState<any[]>([]);
     const [historial, setHistorial] = useState<any[]>([]);
@@ -49,11 +49,11 @@ export function HistorialPrecios() {
                                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 2 }}>
                                             <span style={{ color: "#888" }}>{h.fecha}</span>
                                             <span>
-                                                <strong>${parseFloat(h.precio_kg).toFixed(2)}</strong>
-                                                {h.precio_caja && <span style={{ color: "#888" }}> / caja: ${parseFloat(h.precio_caja).toFixed(2)}</span>}
+                                                <strong>${money(h.precio_kg)}</strong>
+                                                {h.precio_caja && <span style={{ color: "#888" }}> / caja: ${money(h.precio_caja)}</span>}
                                                 {diff !== 0 && (
                                                     <span style={{ color: diff > 0 ? "#d32f2f" : "#1a8a3a", marginLeft: 6, fontSize: 11 }}>
-                                                        {diff > 0 ? "▲" : "▼"} ${Math.abs(diff).toFixed(2)}
+                                                        {diff > 0 ? "▲" : "▼"} ${money(Math.abs(diff))}
                                                     </span>
                                                 )}
                                             </span>
@@ -69,9 +69,9 @@ export function HistorialPrecios() {
 
                     {historial.length > 0 && (
                         <div style={{ marginTop: 16, fontSize: 12, color: "#888", borderTop: "1px solid #eee", paddingTop: 12 }}>
-                            <div>Precio base (catálogo): <strong>${parseFloat(historial[0]?.precio_base_kg || 0).toFixed(2)}</strong>/kg</div>
-                            <div>Último precio registrado: <strong>${parseFloat(historial[historial.length - 1]?.precio_kg || 0).toFixed(2)}</strong>/kg</div>
-                            <div>Precio más alto: <strong>${maxPrecio.toFixed(2)}</strong>/kg</div>
+                            <div>Precio base (catálogo): <strong>${money(historial[0]?.precio_base_kg || 0)}</strong>/kg</div>
+                            <div>Último precio registrado: <strong>${money(historial[historial.length - 1]?.precio_kg || 0)}</strong>/kg</div>
+                            <div>Precio más alto: <strong>${money(maxPrecio)}</strong>/kg</div>
                         </div>
                     )}
                 </div>
@@ -79,3 +79,5 @@ export function HistorialPrecios() {
         </div>
     );
 }
+
+

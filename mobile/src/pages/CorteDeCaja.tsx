@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { get, post } from "../services/api";
@@ -45,11 +46,11 @@ export function CorteDeCaja() {
     const retirar = async () => {
         const m = parseFloat(montoRetiro);
         if (!m || m <= 0) { setMsg("Ingresa un monto válido"); return; }
-        if (!confirm(`¿Retirar $${m.toFixed(2)} de la caja?${motivoRetiro ? ` (${motivoRetiro})` : ""}`)) return;
+        if (!confirm(`¿Retirar $${money(m)} de la caja?${motivoRetiro ? ` (${motivoRetiro})` : ""}`)) return;
         setMsg("Registrando retiro...");
         try {
             await post("/cortes/retiro", { monto: m, motivo: motivoRetiro });
-            setMsg(`Retiro de $${m.toFixed(2)} registrado`);
+            setMsg(`Retiro de $${money(m)} registrado`);
             setShowRetiro(false);
             setMontoRetiro("");
             setMotivoRetiro("");
@@ -204,3 +205,4 @@ export function CorteDeCaja() {
         </div></>
     );
 }
+

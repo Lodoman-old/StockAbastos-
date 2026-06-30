@@ -1,3 +1,4 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { get, put } from "../services/api";
@@ -92,9 +93,10 @@ export function PreciosDelDia() {
                                 placeholder={p.precio_por_caja || "0"} />
                         </div>
                     </div>
-                    <div style={{ fontSize: 11, color: "#999", marginTop: 4 }}>Base: ${parseFloat(p.precio_por_kg || 0).toFixed(2)}/kg</div>
+                    <div style={{ fontSize: 11, color: "#999", marginTop: 4 }}>Base: ${money(p.precio_por_kg || 0)}/kg</div>
                 </div>
             ))}
         </div></>
     );
 }
+

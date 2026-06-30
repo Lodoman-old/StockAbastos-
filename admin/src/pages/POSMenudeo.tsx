@@ -1,7 +1,7 @@
+import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, post } from "../services/api";
 import { notify } from "../components/Toast";
-
 interface CartItem {
     producto_id: string;
     producto_nombre: string;
@@ -191,9 +191,9 @@ export function POSMenudeo() {
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ fontWeight: "bold" }}>{s.producto_nombre}</div>
                                     <div style={{ fontSize: 11, color: "#888" }}>
-                                        {s.modalidad_kilo_suelto && `$${Number(s.precio_menudeo_kg_hoy || s.precio_menudeo_kg).toFixed(2)}/kg (${dispKg.toFixed(1)}kg disp.)`}
+                                        {s.modalidad_kilo_suelto && `$${money(s.precio_menudeo_kg_hoy || s.precio_menudeo_kg)}/kg (${dispKg.toFixed(1)}kg disp.)`}
                                         {s.modalidad_kilo_suelto && s.modalidad_unidad && " | "}
-                                        {s.modalidad_unidad && `$${Number(s.precio_unidad_hoy || s.precio_por_unidad).toFixed(2)}/pz (${dispPz} disp.)`}
+                                        {s.modalidad_unidad && `$${money(s.precio_unidad_hoy || s.precio_por_unidad)}/pz (${dispPz} disp.)`}
                                     </div>
                                 </div>
                                 <div style={{ display: "flex", gap: 6 }}>
@@ -242,7 +242,7 @@ export function POSMenudeo() {
                                                     style={{ width: 70, padding: "2px 4px", border: "2px solid #ff9800", borderRadius: 4, fontSize: 12, fontWeight: "bold", textAlign: "right" }}
                                                     autoFocus />
                                             ) : (
-                                                <span>${item.precio_unitario.toFixed(2)}{item.es_kilo ? "/kg" : "/pz"}</span>
+                                                <span>${money(item.precio_unitario)}{item.es_kilo ? "/kg" : "/pz"}</span>
                                             )}
                                             <label style={{ fontSize: 9, display: "flex", alignItems: "center", gap: 2, cursor: "pointer" }}>
                                                 <input type="checkbox" checked={!!item.precioManual} onChange={toggleManual} style={{ cursor: "pointer" }} />
@@ -276,7 +276,7 @@ export function POSMenudeo() {
                                         </>
                                     )}
                                     <div style={{ marginLeft: "auto", fontWeight: "bold", fontSize: 15, color: "#1a8a3a" }}>
-                                        ${item.subtotal.toFixed(2)}
+                                        ${money(item.subtotal)}
                                     </div>
                                 </div>
                             </div>
@@ -288,7 +288,7 @@ export function POSMenudeo() {
                 <div style={{ padding: 16, borderTop: "1px solid #eee" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, fontWeight: "bold", marginBottom: 12 }}>
                         <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>${money(total)}</span>
                     </div>
 
                     {msg && (
@@ -368,7 +368,7 @@ export function POSMenudeo() {
                                 <button onClick={cobrar}
                                     disabled={parseFloat(pagoEfectivo || "0") < total}
                                     style={{ flex: 1, padding: "14px", background: parseFloat(pagoEfectivo || "0") >= total ? "#1a8a3a" : "#ccc", color: "#fff", border: "none", borderRadius: 8, cursor: parseFloat(pagoEfectivo || "0") >= total ? "pointer" : "default", fontWeight: "bold", fontSize: 15 }}>
-                                    Confirmar ${total.toFixed(2)}
+                                    Confirmar ${money(total)}
                                 </button>
                                 <button onClick={() => { setPaying(false); setPagoEfectivo(""); }}
                                     style={{ padding: "14px 20px", background: "#888", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14 }}>
@@ -383,3 +383,5 @@ export function POSMenudeo() {
         </>
     );
 }
+
+
