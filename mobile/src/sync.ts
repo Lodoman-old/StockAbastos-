@@ -31,14 +31,18 @@ async function fetchWithAuth(path: string, options: RequestInit = {}) {
   if (!base) throw new Error("API no configurada");
   const apiPath = path.startsWith("/api/") ? path : `/api${path.startsWith("/") ? "" : "/"}${path}`;
   const token = getToken();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   const res = await fetch(`${base}${apiPath}`, {
     ...options,
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });
+  clearTimeout(timeout);
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
     const err: any = new Error(body.error || `Error ${res.status}`);

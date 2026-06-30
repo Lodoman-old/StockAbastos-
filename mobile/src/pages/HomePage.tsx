@@ -7,6 +7,7 @@ import { notify } from "../components/Toast";
 export function HomePage() {
   const navigate = useNavigate();
   const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+  const esAdmin = usuario.rol === "admin" || usuario.rol === "supervisor";
   const permisos: string[] = usuario.permisos || [];
   const [pendientes, setPendientes] = useState(0);
   const [online, setOnline] = useState(isOnline());
@@ -31,6 +32,11 @@ export function HomePage() {
   };
 
   type Item = { label: string; icon: string; path: string; color: string; permiso?: string };
+  function puedeVer(i: Item): boolean {
+    if (esAdmin) return true;
+    if (i.permiso) return permisos.includes(i.permiso);
+    return false;
+  }
   const todas: { titulo: string; items: Item[] }[] = [
     {
       titulo: "Recepción",
@@ -59,7 +65,7 @@ export function HomePage() {
     },
   ];
   const secciones = todas
-    .map(s => ({ ...s, items: s.items.filter(i => !i.permiso || permisos.includes(i.permiso)) }))
+    .map(s => ({ ...s, items: s.items.filter(puedeVer) }))
     .filter(s => s.items.length > 0);
 
   return (

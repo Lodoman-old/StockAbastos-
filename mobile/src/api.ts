@@ -31,14 +31,18 @@ async function request<T = any>(path: string, options: RequestInit = {}): Promis
   if (!base) throw new Error("API no configurada");
   const apiPath = path.startsWith("/api/") ? path : `/api${path.startsWith("/") ? "" : "/"}${path}`;
   const token = getToken();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   const res = await fetch(`${base}${apiPath}`, {
     ...options,
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });
+  clearTimeout(timeout);
   if (res.status === 401) {
     clearSession();
     window.location.href = "/setup";
