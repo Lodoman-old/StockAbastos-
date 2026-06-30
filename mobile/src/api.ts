@@ -5,7 +5,7 @@ export function getApiUrl(): string {
 }
 
 export function setApiUrl(url: string) {
-  localStorage.setItem(STORAGE_KEY, url.replace(/\/+$/, ""));
+  localStorage.setItem(STORAGE_KEY, url.replace(/\/+$/, "").replace(/\/api$/, ""));
 }
 
 export function clearApiUrl() {

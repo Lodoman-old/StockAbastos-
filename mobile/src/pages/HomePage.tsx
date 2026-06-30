@@ -7,6 +7,7 @@ import { notify } from "../components/Toast";
 export function HomePage() {
   const navigate = useNavigate();
   const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+  const permisos: string[] = usuario.permisos || [];
   const [pendientes, setPendientes] = useState(0);
   const [online, setOnline] = useState(isOnline());
 
@@ -29,33 +30,37 @@ export function HomePage() {
     navigate("/login");
   };
 
-  const secciones: { titulo: string; items: { label: string; icon: string; path: string; color: string }[] }[] = [
+  type Item = { label: string; icon: string; path: string; color: string; permiso?: string };
+  const todas: { titulo: string; items: Item[] }[] = [
     {
       titulo: "Recepción",
       items: [
-        { label: "Recibir tarima", icon: "📦", path: "/scan", color: "#1976d2" },
-        { label: "Confirmar traspaso", icon: "🚚", path: "/scan?action=confirm", color: "#e65100" },
-        { label: "Recibir traspaso", icon: "📥", path: "/scan?action=transfer-receive", color: "#9c27b0" },
+        { label: "Recibir tarima", icon: "📦", path: "/scan", color: "#1976d2", permiso: "recibir_mercancia" },
+        { label: "Confirmar traspaso", icon: "🚚", path: "/scan?action=confirm", color: "#e65100", permiso: "crear_traspaso" },
+        { label: "Recibir traspaso", icon: "📥", path: "/scan?action=transfer-receive", color: "#9c27b0", permiso: "recibir_mercancia" },
       ],
     },
     {
       titulo: "Administración",
       items: [
-        { label: "Dashboard", icon: "📊", path: "/dashboard", color: "#1a8a3a" },
-        { label: "Ventas (POS)", icon: "🛒", path: "/ventas", color: "#e65100" },
+        { label: "Dashboard", icon: "📊", path: "/dashboard", color: "#1a8a3a", permiso: "ver_dashboard" },
+        { label: "Ventas (POS)", icon: "🛒", path: "/ventas", color: "#e65100", permiso: "ver_ventas" },
         { label: "Compras", icon: "📦", path: "/compras", color: "#1976d2" },
         { label: "Clientes", icon: "👥", path: "/clientes", color: "#9c27b0" },
         { label: "Proveedores", icon: "🏭", path: "/proveedores", color: "#555" },
-        { label: "Lotes", icon: "🏷️", path: "/lotes", color: "#00796b" },
-        { label: "Traspasos", icon: "🚚", path: "/traspasos", color: "#e65100" },
+        { label: "Lotes", icon: "🏷️", path: "/lotes", color: "#00796b", permiso: "ver_lotes" },
+        { label: "Traspasos", icon: "🚚", path: "/traspasos", color: "#e65100", permiso: "ver_traspasos" },
         { label: "Corte de caja", icon: "💰", path: "/corte-caja", color: "#2e7d32" },
         { label: "Precios del día", icon: "💲", path: "/precios-diarios", color: "#1565c0" },
-        { label: "Préstamo cajas", icon: "📦", path: "/prestamo-cajas", color: "#6a1b9a" },
+        { label: "Préstamo cajas", icon: "📦", path: "/prestamo-cajas", color: "#6a1b9a", permiso: "ver_prestamo_cajas" },
         { label: "Historial precios", icon: "📈", path: "/historial-precios", color: "#00796b" },
-        { label: "Reportes", icon: "📋", path: "/reportes", color: "#37474f" },
+        { label: "Reportes", icon: "📋", path: "/reportes", color: "#37474f", permiso: "ver_reportes" },
       ],
     },
   ];
+  const secciones = todas
+    .map(s => ({ ...s, items: s.items.filter(i => !i.permiso || permisos.includes(i.permiso)) }))
+    .filter(s => s.items.length > 0);
 
   return (
     <div className="page">
