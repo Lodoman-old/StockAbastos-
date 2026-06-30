@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get, post, put } from "../services/api";
 
 interface Traspaso {
@@ -7,6 +8,7 @@ interface Traspaso {
 }
 
 export function Traspasos() {
+    const navigate = useNavigate();
     const [traspasos, setTraspasos] = useState<Traspaso[]>([]);
     const [loading, setLoading] = useState(true);
     const [msg, setMsg] = useState("");
@@ -45,8 +47,12 @@ export function Traspasos() {
     const card: React.CSSProperties = { background: "#fff", borderRadius: 12, padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" };
 
     return (
-        <div>
-            <h2 style={{ marginBottom: 16 }}>Traspasos</h2>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Traspasos</h1>
+            </div>
+            <div className="page">
 
             {msg && (
                 <div style={{ padding: "10px 14px", borderRadius: 8, marginBottom: 12, fontSize: 14, background: "#e8f5e9", color: "#2e7d32" }}>
@@ -95,6 +101,6 @@ export function Traspasos() {
                     </div>
                 </div>
             ))}
-        </div>
+        </div></>
     );
 }

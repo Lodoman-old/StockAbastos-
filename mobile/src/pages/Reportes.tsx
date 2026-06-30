@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get } from "../services/api";
 
 export function Reportes() {
+    const navigate = useNavigate();
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -15,7 +17,12 @@ export function Reportes() {
     const maxKg = Math.max(...(data.top_productos || []).map((p: any) => parseFloat(p.total_kg)), 1);
 
     return (
-        <div>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Reportes</h1>
+            </div>
+            <div className="page">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
                 <div style={{ background: "#fff", borderRadius: 10, padding: 12, textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
                     <div style={{ fontSize: 20, fontWeight: "bold", color: "#1a8a3a" }}>
@@ -60,6 +67,6 @@ export function Reportes() {
                 ))}
                 {!data.productos_bajo_stock?.length && <p style={{ fontSize: 12, color: "#888" }}>Sin datos</p>}
             </div>
-        </div>
+        </div></>
     );
 }

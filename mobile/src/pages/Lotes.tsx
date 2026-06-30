@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get } from "../services/api";
 
 export function Lotes() {
+    const navigate = useNavigate();
     const [lotes, setLotes] = useState<any[]>([]);
     const [error, setError] = useState("");
 
@@ -9,12 +11,18 @@ export function Lotes() {
         get("/lotes").then(setLotes).catch((e) => setError(e.message));
     }, []);
 
-    if (error) return <p style={{ color: "#f44336" }}>Error: {error}</p>;
+    if (error) return <><div className="header" style={{ marginBottom: 16 }}><span className="header-back" onClick={() => navigate("/")}>←</span><h1>Lotes</h1></div><div className="page"><p style={{ color: "#f44336" }}>Error: {error}</p></div></>;
 
-    if (lotes.length === 0) return <p style={{ color: "#888" }}>Sin lotes activos</p>;
+    if (lotes.length === 0) return <><div className="header" style={{ marginBottom: 16 }}><span className="header-back" onClick={() => navigate("/")}>←</span><h1>Lotes</h1></div><div className="page"><p style={{ color: "#888" }}>Sin lotes activos</p></div></>;
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Lotes</h1>
+            </div>
+            <div className="page">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {lotes.map((l: any) => (
                 <div key={l.id} style={{
                     background: "#fff", borderRadius: 10, padding: 12,
@@ -37,5 +45,6 @@ export function Lotes() {
                 </div>
             ))}
         </div>
+        </div></>
     );
 }

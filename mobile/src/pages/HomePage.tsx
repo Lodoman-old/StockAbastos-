@@ -23,19 +23,40 @@ export function HomePage() {
     notify("Catálogos actualizados", "success");
   };
 
-  const acciones = [
-    { label: "Escanear QR", icon: "📷", path: "/scan", color: "#1a8a3a" },
-    { label: "Recibir tarima", icon: "📦", path: "/scan?action=receive", color: "#1976d2" },
-    { label: "Confirmar traspaso", icon: "🚚", path: "/scan?action=confirm", color: "#e65100" },
-    { label: "Recibir traspaso", icon: "📥", path: "/scan?action=transfer-receive", color: "#9c27b0" },
-    { label: "Configuración", icon: "⚙️", path: "/settings", color: "#555" },
-  ];
-
   const salir = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
     navigate("/login");
   };
+
+  const secciones: { titulo: string; items: { label: string; icon: string; path: string; color: string }[] }[] = [
+    {
+      titulo: "Recepción",
+      items: [
+        { label: "Escanear QR", icon: "📷", path: "/scan", color: "#1a8a3a" },
+        { label: "Recibir tarima", icon: "📦", path: "/scan?action=receive", color: "#1976d2" },
+        { label: "Confirmar traspaso", icon: "🚚", path: "/scan?action=confirm", color: "#e65100" },
+        { label: "Recibir traspaso", icon: "📥", path: "/scan?action=transfer-receive", color: "#9c27b0" },
+      ],
+    },
+    {
+      titulo: "Administración",
+      items: [
+        { label: "Dashboard", icon: "📊", path: "/dashboard", color: "#1a8a3a" },
+        { label: "Ventas (POS)", icon: "🛒", path: "/ventas", color: "#e65100" },
+        { label: "Compras", icon: "📦", path: "/compras", color: "#1976d2" },
+        { label: "Clientes", icon: "👥", path: "/clientes", color: "#9c27b0" },
+        { label: "Proveedores", icon: "🏭", path: "/proveedores", color: "#555" },
+        { label: "Lotes", icon: "🏷️", path: "/lotes", color: "#00796b" },
+        { label: "Traspasos", icon: "🚚", path: "/traspasos", color: "#e65100" },
+        { label: "Corte de caja", icon: "💰", path: "/corte-caja", color: "#2e7d32" },
+        { label: "Precios del día", icon: "💲", path: "/precios-diarios", color: "#1565c0" },
+        { label: "Préstamo cajas", icon: "📦", path: "/prestamo-cajas", color: "#6a1b9a" },
+        { label: "Historial precios", icon: "📈", path: "/historial-precios", color: "#00796b" },
+        { label: "Reportes", icon: "📋", path: "/reportes", color: "#37474f" },
+      ],
+    },
+  ];
 
   return (
     <div className="page">
@@ -44,9 +65,14 @@ export function HomePage() {
           <h2 style={{ margin: 0, fontSize: 20 }}>StockAbastos</h2>
           <p style={{ fontSize: 12, color: "#888", margin: 0 }}>{usuario.nombre || ""}</p>
         </div>
-        <button onClick={salir} className="btn btn-danger" style={{ width: "auto", padding: "8px 16px", fontSize: 13 }}>
-          Salir
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => navigate("/settings")} className="btn btn-outline" style={{ width: "auto", padding: "8px 12px", fontSize: 13 }}>
+            ⚙️
+          </button>
+          <button onClick={salir} className="btn btn-danger" style={{ width: "auto", padding: "8px 16px", fontSize: 13 }}>
+            Salir
+          </button>
+        </div>
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
@@ -64,19 +90,22 @@ export function HomePage() {
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: 12 }}>
-        {acciones.map(a => (
-          <div key={a.path} className="card" onClick={() => navigate(a.path)}
-            style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ fontSize: 28, width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", background: a.color + "18", borderRadius: 12 }}>
-              {a.icon}
-            </div>
-            <div>
-              <div style={{ fontWeight: "bold", fontSize: 15 }}>{a.label}</div>
-            </div>
+      {secciones.map(sec => (
+        <div key={sec.titulo} style={{ marginBottom: 20 }}>
+          <h3 style={{ fontSize: 13, color: "#888", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{sec.titulo}</h3>
+          <div style={{ display: "grid", gap: 8 }}>
+            {sec.items.map(a => (
+              <div key={a.path} className="card" onClick={() => navigate(a.path)}
+                style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "10px 14px" }}>
+                <div style={{ fontSize: 22, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", background: a.color + "18", borderRadius: 10 }}>
+                  {a.icon}
+                </div>
+                <div style={{ fontWeight: "bold", fontSize: 14 }}>{a.label}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }

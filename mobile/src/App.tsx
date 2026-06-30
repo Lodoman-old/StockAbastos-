@@ -10,6 +10,18 @@ import { ReceivePage } from "./pages/ReceivePage";
 import { ConfirmTransferPage } from "./pages/ConfirmTransferPage";
 import { TransferReceivePage } from "./pages/TransferReceivePage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { Dashboard } from "./pages/Dashboard";
+import { Ventas } from "./pages/Ventas";
+import { Compras } from "./pages/Compras";
+import { Proveedores } from "./pages/Proveedores";
+import { Clientes } from "./pages/Clientes";
+import { Lotes } from "./pages/Lotes";
+import { Traspasos } from "./pages/Traspasos";
+import { CorteDeCaja } from "./pages/CorteDeCaja";
+import { PreciosDelDia } from "./pages/PreciosDelDia";
+import { PrestamoCajas } from "./pages/PrestamoCajas";
+import { Reportes } from "./pages/Reportes";
+import { HistorialPrecios } from "./pages/HistorialPrecios";
 import { Toast } from "./components/Toast";
 
 function isAuthed() {
@@ -39,6 +51,18 @@ export function App() {
         <Route path="/setup" element={<SetupPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/ventas" element={<ProtectedRoute><Ventas /></ProtectedRoute>} />
+        <Route path="/compras" element={<ProtectedRoute><Compras /></ProtectedRoute>} />
+        <Route path="/proveedores" element={<ProtectedRoute><Proveedores /></ProtectedRoute>} />
+        <Route path="/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
+        <Route path="/lotes" element={<ProtectedRoute><Lotes /></ProtectedRoute>} />
+        <Route path="/traspasos" element={<ProtectedRoute><Traspasos /></ProtectedRoute>} />
+        <Route path="/corte-caja" element={<ProtectedRoute><CorteDeCaja /></ProtectedRoute>} />
+        <Route path="/precios-diarios" element={<ProtectedRoute><PreciosDelDia /></ProtectedRoute>} />
+        <Route path="/prestamo-cajas" element={<ProtectedRoute><PrestamoCajas /></ProtectedRoute>} />
+        <Route path="/reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
+        <Route path="/historial-precios" element={<ProtectedRoute><HistorialPrecios /></ProtectedRoute>} />
         <Route path="/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
         <Route path="/receive/:codigoQr" element={<ProtectedRoute><ReceivePage /></ProtectedRoute>} />
         <Route path="/confirmar-traspaso/:codigoQr" element={<ProtectedRoute><ConfirmTransferPage /></ProtectedRoute>} />

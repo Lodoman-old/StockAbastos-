@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get, post, put, del } from "../services/api";
 
 export function Proveedores() {
@@ -6,6 +7,7 @@ export function Proveedores() {
     const [showForm, setShowForm] = useState(false);
     const [editId, setEditId] = useState<string | null>(null);
     const [form, setForm] = useState({ nombre: "", contacto: "", telefono: "", email: "", direccion: "", rfc: "" });
+    const navigate = useNavigate();
 
     useEffect(() => { get("/proveedores").then(setProveedores).catch(() => {}); }, []);
 
@@ -39,7 +41,12 @@ export function Proveedores() {
     const s: React.CSSProperties = { padding: "6px 10px", border: "1px solid #ddd", borderRadius: 6, fontSize: 14, width: "100%", boxSizing: "border-box" };
 
     return (
-        <div>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Proveedores</h1>
+            </div>
+            <div className="page">
             <button onClick={() => { setShowForm(true); setEditId(null); setForm({ nombre: "", contacto: "", telefono: "", email: "", direccion: "", rfc: "" }); }}
                 style={{ width: "100%", padding: 14, background: "#1a8a3a", color: "#fff", border: "none", borderRadius: 8, fontSize: 16, fontWeight: "bold", cursor: "pointer", marginBottom: 16 }}>
                 + Nuevo Proveedor
@@ -80,6 +87,6 @@ export function Proveedores() {
                     </div>
                 </div>
             ))}
-        </div>
+        </div></>
     );
 }

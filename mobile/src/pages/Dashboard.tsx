@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get } from "../services/api";
 
 export function Dashboard() {
+    const navigate = useNavigate();
     const [stats, setStats] = useState<any>(null);
     const [error, setError] = useState("");
     const [preciosPendientes, setPreciosPendientes] = useState(0);
@@ -23,7 +25,12 @@ export function Dashboard() {
     if (!stats) return <p>Cargando...</p>;
 
     return (
-        <div>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Dashboard</h1>
+            </div>
+            <div className="page">
             {cajaAbierta !== null && (
                 <div style={{
                     display: "flex", alignItems: "center", gap: 6,
@@ -65,6 +72,6 @@ export function Dashboard() {
                     </div>
                 ))}
             </div>
-        </div>
+        </div></>
     );
 }

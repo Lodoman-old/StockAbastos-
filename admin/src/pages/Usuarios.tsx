@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { get, post } from "../services/api";
+import { get, post, put } from "../services/api";
 
 export function Usuarios() {
     const [usuarios, setUsuarios] = useState<any[]>([]);
     const [roles, setRoles] = useState<any[]>([]);
     const [bodegas, setBodegas] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [form, setForm] = useState({ email: "", password: "", nombre: "", rol_id: "", bodega_id: "" });
+    const [editId, setEditId] = useState<string | null>(null);
+    const [form, setForm] = useState({ email: "", password: "", nombre: "", rol_id: "", bodega_id: "", activo: true });
     const [error, setError] = useState("");
     const [msg, setMsg] = useState("");
 
@@ -18,7 +19,16 @@ export function Usuarios() {
     useEffect(() => { load(); }, []);
 
     const openNew = () => {
-        setForm({ email: "", password: "", nombre: "", rol_id: "", bodega_id: "" });
+        setEditId(null);
+        setForm({ email: "", password: "", nombre: "", rol_id: "", bodega_id: "", activo: true });
+        setError("");
+        setMsg("");
+        setShowModal(true);
+    };
+
+    const openEdit = (u: any) => {
+        setEditId(u.id);
+        setForm({ email: u.email, password: "", nombre: u.nombre, rol_id: u.rol_id || "", bodega_id: u.bodega_id || "", activo: u.activo });
         setError("");
         setMsg("");
         setShowModal(true);
@@ -29,16 +39,26 @@ export function Usuarios() {
         setError("");
         setMsg("");
         try {
-            await post("/auth/register", {
-                ...form,
+            const body: any = {
+                email: form.email,
+                nombre: form.nombre,
                 rol_id: form.rol_id || undefined,
-                bodega_id: form.bodega_id || undefined,
-            });
-            setMsg("Usuario creado correctamente");
+                bodega_id: form.bodega_id || null,
+                activo: form.activo,
+            };
+            if (form.password) body.password = form.password;
+
+            if (editId) {
+                await put(`/auth/usuarios/${editId}`, body);
+                setMsg("Usuario actualizado correctamente");
+            } else {
+                await post("/auth/register", { ...form, rol_id: form.rol_id || undefined, bodega_id: form.bodega_id || undefined });
+                setMsg("Usuario creado correctamente");
+            }
             setShowModal(false);
             load();
         } catch (err: any) {
-            setError(err.message || "Error al crear usuario");
+            setError(err.message || "Error al guardar usuario");
         }
     };
 
@@ -59,7 +79,7 @@ export function Usuarios() {
                 <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }}
                     onClick={() => setShowModal(false)}>
                     <div style={{ background: "#fff", borderRadius: 16, padding: 32, maxWidth: 500, width: "90%" }} onClick={e => e.stopPropagation()}>
-                        <h3 style={{ marginBottom: 16 }}>Nuevo Usuario</h3>
+                        <h3 style={{ marginBottom: 16 }}>{editId ? "Editar Usuario" : "Nuevo Usuario"}</h3>
                         {error && <p style={{ color: "#dc2626", fontSize: 13, marginBottom: 8 }}>{error}</p>}
                         <form onSubmit={handleSubmit}>
                             <div style={{ marginBottom: 12 }}>
@@ -71,8 +91,10 @@ export function Usuarios() {
                                 <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="correo@ejemplo.com" required style={input} />
                             </div>
                             <div style={{ marginBottom: 12 }}>
-                                <label style={{ fontSize: 13, color: "#555", marginBottom: 4, display: "block" }}>Contraseña *</label>
-                                <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="••••••••" required style={input} />
+                                <label style={{ fontSize: 13, color: "#555", marginBottom: 4, display: "block" }}>
+                                    Contraseña {editId ? "(dejar vacío para no cambiar)" : "*"}
+                                </label>
+                                <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="••••••••" required={!editId} style={input} />
                             </div>
                             <div style={{ marginBottom: 12 }}>
                                 <label style={{ fontSize: 13, color: "#555", marginBottom: 4, display: "block" }}>Rol</label>
@@ -81,15 +103,25 @@ export function Usuarios() {
                                     {roles.map((r: any) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
                                 </select>
                             </div>
-                            <div style={{ marginBottom: 16 }}>
+                            <div style={{ marginBottom: 12 }}>
                                 <label style={{ fontSize: 13, color: "#555", marginBottom: 4, display: "block" }}>Bodega asignada</label>
                                 <select value={form.bodega_id} onChange={e => setForm({ ...form, bodega_id: e.target.value })} style={select}>
                                     <option value="">-- Sin asignar --</option>
                                     {bodegas.map((b: any) => <option key={b.id} value={b.id}>{b.codigo} - {b.nombre}</option>)}
                                 </select>
                             </div>
+                            {editId && (
+                                <div style={{ marginBottom: 16 }}>
+                                    <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13 }}>
+                                        <input type="checkbox" checked={form.activo} onChange={e => setForm({ ...form, activo: e.target.checked })} />
+                                        <strong>Usuario activo</strong>
+                                    </label>
+                                </div>
+                            )}
                             <div style={{ display: "flex", gap: 8 }}>
-                                <button type="submit" style={{ padding: "10px 20px", background: "#1a3a2a", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, cursor: "pointer" }}>Crear Usuario</button>
+                                <button type="submit" style={{ padding: "10px 20px", background: "#1a3a2a", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, cursor: "pointer" }}>
+                                    {editId ? "Guardar Cambios" : "Crear Usuario"}
+                                </button>
                                 <button type="button" onClick={() => setShowModal(false)} style={{ padding: "10px 20px", background: "#888", color: "#fff", border: "none", borderRadius: 8, fontSize: 14, cursor: "pointer" }}>Cancelar</button>
                             </div>
                         </form>
@@ -114,6 +146,9 @@ export function Usuarios() {
                                 )}
                             </div>
                         </div>
+                        <button onClick={() => openEdit(u)} style={{ background: "none", border: "1px solid #1a8a3a", color: "#1a8a3a", padding: "6px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
+                            Editar
+                        </button>
                     </div>
                 </div>
             ))}

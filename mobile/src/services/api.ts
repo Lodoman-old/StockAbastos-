@@ -1,43 +1,41 @@
-import { getApiBase } from "./api.config";
+import { getApiUrl, getToken } from "../api";
 
-function headers() {
-    const token = localStorage.getItem("token");
-    return {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
+function apiPath(path: string): string {
+    return path.startsWith("/api/") ? path : `/api${path.startsWith("/") ? "" : "/"}${path}`;
 }
 
-async function request(method: string, path: string, body?: any) {
-    const base = getApiBase();
-    const res = await fetch(`${base}${path}`, {
-        method,
-        headers: headers(),
-        body: body ? JSON.stringify(body) : undefined,
+async function request<T = any>(path: string, options: RequestInit = {}): Promise<T> {
+    const base = getApiUrl();
+    if (!base) throw new Error("API no configurada");
+    const token = getToken();
+    const fullPath = apiPath(path);
+    const res = await fetch(`${base}${fullPath}`, {
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(options.headers || {}),
+        },
     });
-    if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+    if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(body.error || `Error ${res.status}`);
+    }
     return res.json();
 }
 
-export async function get(path: string) {
-    return request("GET", path);
+export function get<T = any>(path: string) {
+    return request<T>(path);
 }
 
-export async function post(path: string, body: any) {
-    return request("POST", path, body);
+export function post<T = any>(path: string, body?: any) {
+    return request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined });
 }
 
-export async function del(path: string) {
-    const token = localStorage.getItem("token");
-    const base = getApiBase();
-    const res = await fetch(`${base}${path}`, {
-        method: "DELETE",
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    });
-    if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
-    return res.json();
+export function put<T = any>(path: string, body?: any) {
+    return request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined });
 }
 
-export async function put(path: string, body: any) {
-    return request("PUT", path, body);
+export function del<T = any>(path: string) {
+    return request<T>(path, { method: "DELETE" });
 }

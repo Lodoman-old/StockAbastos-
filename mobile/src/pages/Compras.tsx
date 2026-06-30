@@ -1,126 +1,227 @@
-import React, { useEffect, useState } from "react";
-import { IonList, IonItem, IonLabel, IonButton, IonInput, IonSelect, IonSelectOption, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonPage, IonText } from "@ionic/react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get, post } from "../services/api";
 
+const emptyForm = { producto_id: "", tarima_tipo_id: "", cantidad: "1", peso_kg: "", costo_por_kg: "", bodega_id: "", fecha_caducidad: "", compra_por_cajas: false, cajas_directas: "1" };
+
 export function Compras() {
+    const navigate = useNavigate();
     const [compras, setCompras] = useState<any[]>([]);
     const [productos, setProductos] = useState<any[]>([]);
     const [bodegas, setBodegas] = useState<any[]>([]);
+    const [proveedores, setProveedores] = useState<any[]>([]);
+    const [tarimasTipos, setTarimasTipos] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [proveedor, setProveedor] = useState("");
     const [fecha, setFecha] = useState(new Date().toISOString().substring(0, 10));
-    const [items, setItems] = useState<Array<{ producto_id: string; producto_nombre: string; unidad_venta: string; cantidad_kg: string; precio_kg: string; cantidad_unidades: string; precio_compra: string; bodega_id: string; fecha_caducidad: string }>>([]);
+    const [form, setForm] = useState(emptyForm);
+    const [items, setItems] = useState<any[]>([]);
+    const [provFilter, setProvFilter] = useState("");
+    const [showProvList, setShowProvList] = useState(false);
 
-    const load = () => Promise.all([get("/compras").then(setCompras), get("/productos").then(setProductos), get("/bodegas").then(setBodegas)]).catch(() => {});
+    const producto = productos.find(p => p.id === form.producto_id);
+    const esUnidad = producto?.modalidad_unidad === true;
+
+    const load = () => Promise.all([
+        get("/compras").then(setCompras),
+        get("/productos").then(setProductos),
+        get("/bodegas").then(setBodegas),
+        get("/tarimas-tipos").then(setTarimasTipos),
+        get("/proveedores").then(setProveedores),
+    ]).catch(() => {});
     useEffect(() => { load(); }, []);
 
-    const addItem = () => setItems([...items, { producto_id: "", producto_nombre: "", unidad_venta: "", cantidad_kg: "", precio_kg: "", cantidad_unidades: "", precio_compra: "", bodega_id: "", fecha_caducidad: "" }]);
-    const updateItem = (i: number, field: string, value: string) => {
-        const n = [...items];
-        (n[i] as any)[field] = value;
-        if (field === "producto_id") {
-            const p = productos.find(p => p.id === value);
-            n[i].producto_nombre = p?.nombre || "";
-            n[i].unidad_venta = p?.unidad_venta || "";
-        }
-        setItems(n);
+    const proveedoresFiltrados = proveedores.filter(p =>
+        p.nombre.toLowerCase().includes(provFilter.toLowerCase())
+    );
+
+    const agregar = () => {
+        if (!form.producto_id || !form.bodega_id) return alert("Completa producto y bodega");
+        if (!form.compra_por_cajas && !form.tarima_tipo_id) return alert("Selecciona tipo de tarima");
+        const p = productos.find(x => x.id === form.producto_id);
+        const tp = tarimasTipos.find(x => x.id === form.tarima_tipo_id);
+        const b = bodegas.find(x => x.id === form.bodega_id);
+        setItems([...items, {
+            producto_id: form.producto_id,
+            producto_nombre: p?.nombre || "",
+            tarima_tipo_id: form.compra_por_cajas ? (tarimasTipos[0]?.id || form.tarima_tipo_id) : form.tarima_tipo_id,
+            tarima_tipo_nombre: form.compra_por_cajas ? "Cajas directas" : (tp?.nombre || ""),
+            cantidad: form.compra_por_cajas ? "1" : (form.cantidad || "1"),
+            peso_kg: form.peso_kg,
+            costo: form.costo_por_kg,
+            bodega_id: form.bodega_id,
+            bodega_nombre: b?.nombre || "",
+            fecha_caducidad: form.fecha_caducidad,
+            compra_por_cajas: form.compra_por_cajas,
+            cajas_directas: form.compra_por_cajas ? (form.cajas_directas || "1") : undefined,
+            es_unidad: p?.modalidad_unidad === true,
+        }]);
+        setForm(emptyForm);
     };
-    const removeItem = (i: number) => setItems(items.filter((_, idx) => idx !== i));
+
+    const quitar = (i: number) => setItems(items.filter((_, idx) => idx !== i));
 
     const save = async () => {
-        const valid = items.every(i => {
-            if (!i.producto_id || !i.bodega_id) return false;
-            if (i.unidad_venta === "PIEZA") return i.cantidad_unidades && i.precio_compra;
-            return i.cantidad_kg && i.precio_kg;
-        });
-        if (!items.length || !valid) return alert("Completa todos los campos");
+        if (!items.length) return alert("Agrega al menos un producto");
         try {
-            await post("/compras", {
-                proveedor: proveedor || undefined, fecha,
-                lotes: items.map(i => ({
+            const res = await post("/compras", {
+                proveedor: proveedor || undefined,
+                fecha,
+                tarimas: items.map(i => ({
                     producto_id: i.producto_id,
-                    ...(i.unidad_venta === "PIEZA"
-                        ? { cantidad_unidades: parseInt(i.cantidad_unidades), precio_compra: parseFloat(i.precio_compra) }
-                        : { cantidad_kg: parseFloat(i.cantidad_kg), precio_kg: parseFloat(i.precio_kg) }),
+                    tarima_tipo_id: i.tarima_tipo_id || undefined,
+                    cantidad: parseInt(i.cantidad),
+                    peso_kg: i.peso_kg ? parseFloat(i.peso_kg) : undefined,
+                    costo_por_kg: i.costo ? parseFloat(i.costo) : undefined,
                     bodega_id: i.bodega_id,
                     fecha_caducidad: i.fecha_caducidad || undefined,
+                    compra_por_cajas: i.compra_por_cajas || false,
+                    cajas_directas: i.cajas_directas ? parseInt(i.cajas_directas) : undefined,
                 })),
             });
-            setShowModal(false); setItems([]); setProveedor(""); load();
+            const msg = `Compra registrada — Lote: ${res.lote_padre?.codigo_lote || ""}`;
+            alert(msg);
+            setShowModal(false);
+            setProveedor("");
+            setFecha(new Date().toISOString().substring(0, 10));
+            setItems([]);
+            setForm(emptyForm);
+            load();
         } catch (e: any) { alert("Error: " + e.message); }
     };
 
+    const inputS = { width: "100%", padding: "10px 12px", fontSize: 14, border: "1px solid #ddd", borderRadius: 8, boxSizing: "border-box" as const };
+
     return (
-        <IonPage>
-            <IonContent className="ion-padding">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    <h2 style={{ margin: 0 }}>Compras</h2>
-                    <IonButton onClick={() => { setShowModal(true); addItem(); }}>+ Nueva</IonButton>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Compras</h1>
+            </div>
+            <div className="page">
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                    <h3 style={{ margin: 0 }}>Compras del día</h3>
+                    <button onClick={() => { setForm(emptyForm); setProveedor(""); setItems([]); setShowModal(true); }}
+                        className="btn btn-primary" style={{ width: "auto", padding: "8px 16px", fontSize: 13 }}>+ Nueva</button>
                 </div>
 
-                <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
-                    <IonHeader>
-                        <IonToolbar><IonTitle>Nueva Compra</IonTitle><IonButtons slot="end"><IonButton onClick={() => setShowModal(false)}>Cerrar</IonButton></IonButtons></IonToolbar>
-                    </IonHeader>
-                    <IonContent className="ion-padding">
-                        <IonList>
-                            <IonItem><IonLabel position="stacked">Proveedor</IonLabel><IonInput value={proveedor} onIonChange={e => setProveedor(e.detail.value || "")} /></IonItem>
-                            <IonItem><IonLabel position="stacked">Fecha</IonLabel><IonInput type="date" value={fecha} onIonChange={e => setFecha(e.detail.value || "")} /></IonItem>
-                        </IonList>
-                        <IonText color="medium"><p style={{ padding: "0 16px" }}>Productos</p></IonText>
-                        {items.map((item, i) => {
-                            const pieza = item.unidad_venta === "PIEZA";
-                            return (
-                                <div key={i} style={{ border: "1px solid #ddd", borderRadius: 8, margin: "0 16px 8px", padding: 8 }}>
-                                    <IonItem>
-                                        <IonLabel position="stacked">Producto</IonLabel>
-                                        <IonSelect value={item.producto_id} onIonChange={e => updateItem(i, "producto_id", e.detail.value)}>
-                                            <IonSelectOption value="">Seleccionar</IonSelectOption>
-                                            {productos.map(p => <IonSelectOption key={p.id} value={p.id}>{p.nombre}</IonSelectOption>)}
-                                        </IonSelect>
-                                    </IonItem>
-                                    <div style={{ display: "flex", gap: 8 }}>
-                                        {pieza ? (
-                                            <>
-                                                <IonItem style={{ flex: 1 }}><IonLabel position="stacked">Cantidad (pz)</IonLabel><IonInput type="number" value={item.cantidad_unidades} onIonChange={e => updateItem(i, "cantidad_unidades", e.detail.value || "")} /></IonItem>
-                                                <IonItem style={{ flex: 1 }}><IonLabel position="stacked">$/pz</IonLabel><IonInput type="number" value={item.precio_compra} onIonChange={e => updateItem(i, "precio_compra", e.detail.value || "")} /></IonItem>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <IonItem style={{ flex: 1 }}><IonLabel position="stacked">Kg</IonLabel><IonInput type="number" value={item.cantidad_kg} onIonChange={e => updateItem(i, "cantidad_kg", e.detail.value || "")} /></IonItem>
-                                                <IonItem style={{ flex: 1 }}><IonLabel position="stacked">$/kg</IonLabel><IonInput type="number" value={item.precio_kg} onIonChange={e => updateItem(i, "precio_kg", e.detail.value || "")} /></IonItem>
-                                            </>
-                                        )}
-                                    </div>
-                                    <IonItem>
-                                        <IonLabel position="stacked">Bodega</IonLabel>
-                                        <IonSelect value={item.bodega_id} onIonChange={e => updateItem(i, "bodega_id", e.detail.value)}>
-                                            <IonSelectOption value="">Seleccionar</IonSelectOption>
-                                            {bodegas.map(b => <IonSelectOption key={b.id} value={b.id}>{b.nombre}</IonSelectOption>)}
-                                        </IonSelect>
-                                    </IonItem>
-                                    <IonItem><IonLabel position="stacked">Caducidad</IonLabel><IonInput type="date" value={item.fecha_caducidad} onIonChange={e => updateItem(i, "fecha_caducidad", e.detail.value || "")} /></IonItem>
-                                    <IonButton color="danger" size="small" onClick={() => removeItem(i)}>Quitar</IonButton>
-                                </div>
-                            );
-                        })}
-                        <IonButton fill="outline" expand="block" onClick={addItem} className="ion-margin">+ Agregar producto</IonButton>
-                        <IonButton expand="block" onClick={save} disabled={!items.length}>Guardar Compra</IonButton>
-                    </IonContent>
-                </IonModal>
+                {showModal && (
+                    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 16, overflow: "auto" }}>
+                        <div style={{ background: "#fff", borderRadius: 16, padding: 24, width: "100%", maxWidth: 500, marginTop: 20 }}>
+                            <h3 style={{ marginTop: 0 }}>Nueva Compra</h3>
 
-                <IonList>
+                            <div className="input-group" style={{ position: "relative" }}>
+                                <label>Proveedor</label>
+                                <input value={provFilter} onChange={e => { setProvFilter(e.target.value); setShowProvList(true); }}
+                                    onFocus={() => setShowProvList(true)} placeholder="Buscar proveedor..." style={inputS} />
+                                {showProvList && proveedoresFiltrados.length > 0 && (
+                                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #ddd", borderRadius: 8, maxHeight: 150, overflow: "auto", zIndex: 1100, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>
+                                        {proveedoresFiltrados.map(p => (
+                                            <div key={p.id} onClick={() => { setProveedor(p.nombre); setProvFilter(p.nombre); setShowProvList(false); }}
+                                                style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f0f0f0" }}>
+                                                <strong>{p.nombre}</strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {proveedor && <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{proveedor} <span onClick={() => { setProveedor(""); setProvFilter(""); }} style={{ color: "#f44336", cursor: "pointer" }}>✕</span></div>}
+                            </div>
+
+                            <div className="input-group"><label>Fecha</label><input className="input" type="date" value={fecha} onChange={e => setFecha(e.target.value)} /></div>
+
+                            <div style={{ marginBottom: 12 }}>
+                                <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13 }}>
+                                    <input type="checkbox" checked={form.compra_por_cajas} onChange={e => setForm({ ...form, compra_por_cajas: e.target.checked })} />
+                                    <strong>Compra por cajas sueltas</strong>
+                                    <span style={{ fontSize: 11, color: "#888" }}>(sin tarima física)</span>
+                                </label>
+                            </div>
+
+                            <div style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr" }}>
+                                <div className="input-group"><label>Producto</label>
+                                    <select className="input" value={form.producto_id} onChange={e => setForm({ ...form, producto_id: e.target.value })}>
+                                        <option value="">Seleccionar</option>
+                                        {productos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                                    </select>
+                                </div>
+
+                                {!form.compra_por_cajas ? (
+                                    <>
+                                        <div className="input-group"><label>Tipo Tarima</label>
+                                            <select className="input" value={form.tarima_tipo_id} onChange={e => setForm({ ...form, tarima_tipo_id: e.target.value })}>
+                                                <option value="">Seleccionar</option>
+                                                {tarimasTipos.map(t => <option key={t.id} value={t.id}>{t.nombre} ({t.cantidad_cajas} cajas)</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="input-group"><label>Cantidad (tarimas)</label>
+                                            <input className="input" type="number" min="1" value={form.cantidad} onChange={e => setForm({ ...form, cantidad: e.target.value })} />
+                                        </div>
+                                        <div className="input-group"><label>Peso x tarima (kg)</label>
+                                            <input className="input" type="number" step="0.1" value={form.peso_kg} onChange={e => setForm({ ...form, peso_kg: e.target.value })} />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="input-group"><label>Cajas</label>
+                                            <input className="input" type="number" min="1" value={form.cajas_directas} onChange={e => setForm({ ...form, cajas_directas: e.target.value })} />
+                                        </div>
+                                        <div className="input-group"><label>Peso total (kg)</label>
+                                            <input className="input" type="number" step="0.1" value={form.peso_kg} onChange={e => setForm({ ...form, peso_kg: e.target.value })} />
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="input-group"><label>{esUnidad ? "Costo por unidad ($)" : "Costo por kg ($)"}</label>
+                                    <input className="input" type="number" step="0.01" value={form.costo_por_kg} onChange={e => setForm({ ...form, costo_por_kg: e.target.value })} />
+                                </div>
+                                <div className="input-group"><label>Bodega</label>
+                                    <select className="input" value={form.bodega_id} onChange={e => setForm({ ...form, bodega_id: e.target.value })}>
+                                        <option value="">Seleccionar</option>
+                                        {bodegas.map(b => <option key={b.id} value={b.id}>{b.nombre}</option>)}
+                                    </select>
+                                </div>
+                                <div className="input-group"><label>Caducidad</label>
+                                    <input className="input" type="date" value={form.fecha_caducidad} onChange={e => setForm({ ...form, fecha_caducidad: e.target.value })} />
+                                </div>
+                                <div style={{ display: "flex", alignItems: "flex-end", marginBottom: 16 }}>
+                                    <button onClick={agregar} className="btn btn-secondary" style={{ padding: "10px 0" }}>+ Agregar</button>
+                                </div>
+                            </div>
+
+                            <h4 style={{ fontSize: 14, margin: "12px 0 8px" }}>Productos ({items.length})</h4>
+                            {items.map((item, i) => (
+                                <div key={i} style={{ border: "1px solid #eee", borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div>
+                                        <strong>{item.producto_nombre}</strong> – {item.es_unidad ? `${item.cajas_directas || item.cantidad} pz` : `${item.tarima_tipo_nombre}${item.compra_por_cajas ? ` (${item.cajas_directas} cajas)` : ` x${item.cantidad}`}`}
+                                        <div style={{ fontSize: 11, color: "#888" }}>
+                                            {item.costo && `$${parseFloat(item.costo).toFixed(2)}${item.es_unidad ? '/unidad' : '/kg'}`}
+                                            {item.peso_kg && !item.es_unidad ? ` | ${item.peso_kg} kg` : ""}
+                                            {item.bodega_nombre && ` | ${item.bodega_nombre}`}
+                                            {item.fecha_caducidad && ` | Cad: ${new Date(item.fecha_caducidad).toLocaleDateString()}`}
+                                        </div>
+                                    </div>
+                                    <button onClick={() => quitar(i)} style={{ background: "none", border: "1px solid #f44336", color: "#f44336", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 11 }}>Quitar</button>
+                                </div>
+                            ))}
+
+                            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                                <button onClick={save} disabled={!items.length} className="btn btn-primary" style={{ flex: 1 }}>Guardar Compra</button>
+                                <button onClick={() => setShowModal(false)} className="btn btn-outline" style={{ flex: 1 }}>Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div style={{ display: "grid", gap: 8 }}>
                     {compras.map(c => (
-                        <IonItem key={c.id}>
-                            <IonLabel>
-                                <h3>{c.proveedor || "Sin proveedor"} — ${parseFloat(c.total || 0).toFixed(2)}</h3>
-                                <p>{new Date(c.fecha).toLocaleDateString()} — {c.detalles?.length || 0} producto(s)</p>
-                            </IonLabel>
-                        </IonItem>
+                        <div key={c.id} className="card" style={{ padding: "12px 16px" }}>
+                            <div style={{ fontWeight: "bold", fontSize: 15 }}>{c.proveedor || "Sin proveedor"} — ${parseFloat(c.total || 0).toFixed(2)}</div>
+                            <div style={{ fontSize: 13, color: "#888" }}>{new Date(c.fecha).toLocaleDateString()} — {c.detalles?.length || 0} producto(s)</div>
+                        </div>
                     ))}
-                    {!compras.length && <IonItem><IonLabel className="ion-text-center">Sin compras</IonLabel></IonItem>}
-                </IonList>
-            </IonContent>
-        </IonPage>
+                    {!compras.length && <p style={{ color: "#888", textAlign: "center" }}>Sin compras</p>}
+                </div>
+            </div>
+        </>
     );
 }

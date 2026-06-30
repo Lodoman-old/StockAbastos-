@@ -75,12 +75,12 @@ export async function testConnection(url: string): Promise<boolean> {
   }
 }
 
-export async function login(url: string, username: string, password: string) {
+export async function login(url: string, email: string, password: string) {
   const base = url.replace(/\/+$/, "");
   const res = await fetch(`${base}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: "Error de conexión" }));

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get, put } from "../services/api";
 
 export function PrestamoCajas() {
+    const navigate = useNavigate();
     const [prestamos, setPrestamos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [msg, setMsg] = useState("");
@@ -29,7 +31,12 @@ export function PrestamoCajas() {
     if (loading) return <p style={{ color: "#888", textAlign: "center" }}>Cargando...</p>;
 
     return (
-        <div>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Préstamo de Cajas</h1>
+            </div>
+            <div className="page">
             {msg && (
                 <div style={{
                     padding: 8, borderRadius: 8, fontSize: 12, marginBottom: 12, textAlign: "center",
@@ -68,6 +75,6 @@ export function PrestamoCajas() {
                     {p.producto_nombre && <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>{p.producto_nombre}</div>}
                 </div>
             ))}
-        </div>
+        </div></>
     );
 }

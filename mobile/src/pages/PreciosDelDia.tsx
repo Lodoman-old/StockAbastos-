@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get, put } from "../services/api";
 
 export function PreciosDelDia() {
+    const navigate = useNavigate();
     const [productos, setProductos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -42,9 +44,13 @@ export function PreciosDelDia() {
     const s: React.CSSProperties = { padding: "6px 10px", border: "1px solid #ddd", borderRadius: 6, fontSize: 14, width: "100%", boxSizing: "border-box", textAlign: "right" };
 
     return (
-        <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h4 style={{ margin: 0 }}>Precios del Día</h4>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Precios del Día</h1>
+            </div>
+            <div className="page">
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
                 <button onClick={guardar} disabled={saving}
                     style={{ padding: "8px 14px", background: "#1a8a3a", color: "#fff", border: "none", borderRadius: 6, cursor: saving ? "not-allowed" : "pointer", fontSize: 13 }}>
                     {saving ? "Guardando..." : "Guardar"}
@@ -89,6 +95,6 @@ export function PreciosDelDia() {
                     <div style={{ fontSize: 11, color: "#999", marginTop: 4 }}>Base: ${parseFloat(p.precio_por_kg || 0).toFixed(2)}/kg</div>
                 </div>
             ))}
-        </div>
+        </div></>
     );
 }

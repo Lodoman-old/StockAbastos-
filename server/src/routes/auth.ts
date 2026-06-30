@@ -102,6 +102,46 @@ export async function authRoutes(app: FastifyInstance) {
         return result.rows;
     });
 
+    app.put<{ Params: { id: string }; Body: { email?: string; nombre?: string; password?: string; rol_id?: string; bodega_id?: string | null; activo?: boolean } }>(
+        "/usuarios/:id",
+        async (request, reply) => {
+            const { id } = request.params;
+            const { email, nombre, password, rol_id, bodega_id, activo } = request.body;
+
+            const fields: string[] = [];
+            const params: any[] = [];
+            let idx = 1;
+
+            if (email !== undefined) { fields.push(`email = $${idx++}`); params.push(email.toLowerCase().trim()); }
+            if (nombre !== undefined) { fields.push(`nombre = $${idx++}`); params.push(nombre); }
+            if (password !== undefined) {
+                const password_hash = await bcrypt.hash(password, 10);
+                fields.push(`password_hash = $${idx++}`);
+                params.push(password_hash);
+            }
+            if (rol_id !== undefined) {
+                fields.push(`rol_id = $${idx++}`);
+                params.push(rol_id || null);
+            }
+            if (bodega_id !== undefined) {
+                fields.push(`bodega_id = $${idx++}`);
+                params.push(bodega_id || null);
+            }
+            if (activo !== undefined) { fields.push(`activo = $${idx++}`); params.push(activo); }
+
+            if (!fields.length) return reply.status(400).send({ error: "Sin campos para actualizar" });
+
+            params.push(id);
+            const result = await query(
+                `UPDATE usuarios SET ${fields.join(", ")} WHERE id = $${idx} RETURNING id, email, nombre, rol, rol_id, bodega_id, activo`,
+                params
+            );
+
+            if (!result.rows.length) return reply.status(404).send({ error: "Usuario no encontrado" });
+            return result.rows[0];
+        }
+    );
+
     app.get("/me", async (request) => {
         await request.jwtVerify();
         const payload = request.user as any;

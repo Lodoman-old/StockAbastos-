@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { IonList, IonItem, IonLabel, IonButton, IonInput, IonSelect, IonSelectOption, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonPage, IonText } from "@ionic/react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get, post, put } from "../services/api";
 
 export function Clientes() {
+    const navigate = useNavigate();
     const [clientes, setClientes] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [editId, setEditId] = useState<string | null>(null);
@@ -29,40 +30,39 @@ export function Clientes() {
     };
 
     return (
-        <IonPage>
-            <IonContent className="ion-padding">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    <h2 style={{ margin: 0 }}>Clientes</h2>
-                    <IonButton onClick={openNew}>+ Nuevo</IonButton>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Clientes</h1>
+                <button onClick={openNew} className="btn btn-primary">+ Nuevo</button>
+            </div>
+            <div className="page">
+
+            {showModal && (
+                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+                    <div style={{ background: "#fff", borderRadius: 16, padding: 24, width: "100%", maxWidth: 400, maxHeight: "90vh", overflow: "auto" }}>
+                        <h3 style={{ marginTop: 0 }}>{editId ? "Editar" : "Nuevo"} Cliente</h3>
+                        <div className="input-group"><label>Nombre</label><input className="input" value={nombre} onChange={e => setNombre(e.target.value)} /></div>
+                        <div className="input-group"><label>Teléfono</label><input className="input" value={telefono} onChange={e => setTelefono(e.target.value)} /></div>
+                        <div className="input-group"><label>Dirección</label><input className="input" value={direccion} onChange={e => setDireccion(e.target.value)} /></div>
+                        <div className="input-group"><label>Límite de crédito ($)</label><input className="input" type="number" value={limite} onChange={e => setLimite(e.target.value)} /></div>
+                        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+                            <button onClick={() => setShowModal(false)} className="btn btn-outline" style={{ flex: 1 }}>Cancelar</button>
+                            <button onClick={save} className="btn btn-primary" style={{ flex: 1 }}>Guardar</button>
+                        </div>
+                    </div>
                 </div>
+            )}
 
-                <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
-                    <IonHeader>
-                        <IonToolbar><IonTitle>{editId ? "Editar" : "Nuevo"} Cliente</IonTitle><IonButtons slot="end"><IonButton onClick={() => setShowModal(false)}>Cerrar</IonButton></IonButtons></IonToolbar>
-                    </IonHeader>
-                    <IonContent className="ion-padding">
-                        <IonList>
-                            <IonItem><IonLabel position="stacked">Nombre</IonLabel><IonInput value={nombre} onIonChange={e => setNombre(e.detail.value || "")} /></IonItem>
-                            <IonItem><IonLabel position="stacked">Teléfono</IonLabel><IonInput value={telefono} onIonChange={e => setTelefono(e.detail.value || "")} /></IonItem>
-                            <IonItem><IonLabel position="stacked">Dirección</IonLabel><IonInput value={direccion} onIonChange={e => setDireccion(e.detail.value || "")} /></IonItem>
-                            <IonItem><IonLabel position="stacked">Límite de crédito ($)</IonLabel><IonInput type="number" value={limite} onIonChange={e => setLimite(e.detail.value || "")} /></IonItem>
-                        </IonList>
-                        <IonButton expand="block" onClick={save} className="ion-margin-top">Guardar</IonButton>
-                    </IonContent>
-                </IonModal>
-
-                <IonList>
-                    {clientes.map(c => (
-                        <IonItem key={c.id} onClick={() => openEdit(c)}>
-                            <IonLabel>
-                                <h3>{c.nombre}</h3>
-                                <p>{c.telefono || "Sin teléfono"} — Límite: ${parseFloat(c.limite_credito || 0).toFixed(2)}</p>
-                            </IonLabel>
-                        </IonItem>
-                    ))}
-                    {!clientes.length && <IonItem><IonLabel className="ion-text-center">Sin clientes</IonLabel></IonItem>}
-                </IonList>
-            </IonContent>
-        </IonPage>
+            <div style={{ display: "grid", gap: 8 }}>
+                {clientes.map(c => (
+                    <div key={c.id} className="card" onClick={() => openEdit(c)} style={{ cursor: "pointer", padding: "12px 16px" }}>
+                        <div style={{ fontWeight: "bold", fontSize: 15 }}>{c.nombre}</div>
+                        <div style={{ fontSize: 13, color: "#888" }}>{c.telefono || "Sin teléfono"} — Límite: ${parseFloat(c.limite_credito || 0).toFixed(2)}</div>
+                    </div>
+                ))}
+                {!clientes.length && <p style={{ color: "#888", textAlign: "center" }}>Sin clientes</p>}
+            </div>
+        </div></>
     );
 }

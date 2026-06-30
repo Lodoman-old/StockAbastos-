@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get, post } from "../services/api";
 import { useNetwork } from "../hooks/useNetwork";
 import { getApiBase } from "../services/api.config";
 
 export function Ventas() {
+    const navigate = useNavigate();
     const isOnline = useNetwork();
     const [ventas, setVentas] = useState<any[]>([]);
     const [bodegas, setBodegas] = useState<any[]>([]);
@@ -260,7 +262,11 @@ export function Ventas() {
     if (!showPOS) {
         return (
             <>
-            <div>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Ventas</h1>
+            </div>
+            <div className="page">
                 <div style={{ padding: "8px 12px", borderRadius: 8, marginBottom: 12, fontSize: 13,
                     background: isOnline ? "#d4edda" : "#fff3cd", color: isOnline ? "#155724" : "#856404" }}>
                     {isOnline ? "Online" : "Offline — no disponible"}

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get } from "../services/api";
 
 export function HistorialPrecios() {
+    const navigate = useNavigate();
     const [productos, setProductos] = useState<any[]>([]);
     const [historial, setHistorial] = useState<any[]>([]);
     const [productoId, setProductoId] = useState("");
@@ -17,8 +19,12 @@ export function HistorialPrecios() {
     };
 
     return (
-        <div>
-            <h4 style={{ margin: "0 0 12px" }}>Historial de Precios</h4>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Historial de Precios</h1>
+            </div>
+            <div className="page">
 
             <select value={productoId} onChange={e => cargar(e.target.value)}
                 style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8, fontSize: 14, marginBottom: 16 }}>
@@ -56,6 +62,6 @@ export function HistorialPrecios() {
                     )}
                 </div>
             )}
-        </div>
+        </div></>
     );
 }

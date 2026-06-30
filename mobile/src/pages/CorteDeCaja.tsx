@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { get, post } from "../services/api";
 
 export function CorteDeCaja() {
+    const navigate = useNavigate();
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [msg, setMsg] = useState("");
@@ -64,7 +66,12 @@ export function CorteDeCaja() {
     };
 
     return (
-        <div>
+        <>
+            <div className="header" style={{ marginBottom: 16 }}>
+                <span className="header-back" onClick={() => navigate("/")}>←</span>
+                <h1>Corte de Caja</h1>
+            </div>
+            <div className="page">
             <div style={{ textAlign: "center", marginBottom: 12 }}>
                 <div style={{ fontSize: 12, color: "#888" }}>{new Date().toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
             </div>
@@ -194,6 +201,6 @@ export function CorteDeCaja() {
                     {msg}
                 </div>
             )}
-        </div>
+        </div></>
     );
 }

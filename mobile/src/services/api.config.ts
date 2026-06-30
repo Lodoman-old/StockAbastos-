@@ -1,28 +1,37 @@
 import { Capacitor } from "@capacitor/core";
 
-const STORAGE_KEY = "stockabastos_server_url";
-
-const DEFAULT_URL = Capacitor.isNativePlatform()
-    ? "http://192.168.0.24:4000/api"
-    : "http://localhost:4000/api";
+const OLD_KEY = "stockabastos_server_url";
+const NEW_KEY = "stockabastos_api_url";
 
 export function getApiBase(): string {
-    if (!Capacitor.isNativePlatform()) return DEFAULT_URL;
-    return localStorage.getItem(STORAGE_KEY) || DEFAULT_URL;
+    let url = localStorage.getItem(OLD_KEY) || localStorage.getItem(NEW_KEY);
+    if (!url) {
+        url = Capacitor.isNativePlatform()
+            ? "http://192.168.0.24:4000/api"
+            : "http://localhost:4000/api";
+    }
+    if (!url.endsWith("/api")) {
+        url = url.replace(/\/+$/, "") + "/api";
+    }
+    return url;
 }
 
 export function setApiBase(url: string): void {
-    localStorage.setItem(STORAGE_KEY, url);
+    if (!url.endsWith("/api")) {
+        url = url.replace(/\/+$/, "") + "/api";
+    }
+    localStorage.setItem(OLD_KEY, url);
 }
 
 export function getPublicUrl(): string {
-    return getApiBase().replace("/api", "");
+    return getApiBase().replace(/\/api\/?$/, "");
 }
 
 export function isServerConfigured(): boolean {
-    return !!localStorage.getItem(STORAGE_KEY);
+    return !!(localStorage.getItem(OLD_KEY) || localStorage.getItem(NEW_KEY));
 }
 
 export function clearServerConfig(): void {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(OLD_KEY);
+    localStorage.removeItem(NEW_KEY);
 }
