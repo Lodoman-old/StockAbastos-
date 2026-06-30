@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 import { notify } from "../components/Toast";
+import { post } from "../api";
 
 export function ScanPage() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export function ScanPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scanning, setScanning] = useState(true);
   const [manual, setManual] = useState("");
+  const [procesando, setProcesando] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -26,7 +28,7 @@ export function ScanPage() {
       (decodedText) => {
         qr.stop().catch(() => {});
         setScanning(false);
-        navegar(decodedText);
+        procesar(decodedText);
       },
       () => {}
     ).catch((err) => {
@@ -39,16 +41,31 @@ export function ScanPage() {
     };
   }, []);
 
-  const navegar = (codigo: string) => {
+  const procesar = async (codigo: string) => {
     const qr = codigo.trim();
-    if (action === "confirm") navigate(`/confirmar-traspaso/${encodeURIComponent(qr)}`);
-    else if (action === "transfer-receive") navigate(`/recibir-traspaso/${encodeURIComponent(qr)}`);
-    else navigate(`/receive/${encodeURIComponent(qr)}`);
+    if (!qr) return;
+    setProcesando(true);
+    try {
+      if (action === "confirm") {
+        await post(`/tarimas/confirmar-traspaso/${encodeURIComponent(qr)}`);
+        notify("Traspaso confirmado", "success");
+      } else if (action === "transfer-receive") {
+        await post(`/tarimas/entregar/${encodeURIComponent(qr)}`);
+        notify("Traspaso recibido en destino", "success");
+      } else {
+        await post(`/tarimas/recibir/${encodeURIComponent(qr)}`, {});
+        notify("Tarima recibida", "success");
+      }
+      setTimeout(() => navigate("/"), 1500);
+    } catch (e: any) {
+      notify("Error: " + (e.message || "Desconocido"), "error");
+      setProcesando(false);
+    }
   };
 
   const handleManual = () => {
     if (!manual.trim()) return notify("Escribe el código QR", "error");
-    navegar(manual.trim());
+    procesar(manual.trim());
   };
 
   const titulo = action === "confirm" ? "Confirmar traspaso" :
