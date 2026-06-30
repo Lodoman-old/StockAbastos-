@@ -46,7 +46,7 @@ await app.register(staticFiles, {
 });
 
 app.addHook("onRequest", async (request, reply) => {
-    const publicRoutes = ["/api/health", "/api/auth/login", "/api/auth/register", "/api/sync/batch", "/api/sync/snapshot", "/api/labels", "/api/ticket", "/api/cortes/inventario-ticket"];
+    const publicRoutes = ["/api/health", "/api/auth/login", "/api/auth/register", "/api/sync/batch", "/api/sync/snapshot", "/api/labels", "/api/ticket", "/api/cortes/inventario-ticket", "/api/tarimas/qr-"];
     if (publicRoutes.some((r) => request.url.startsWith(r))) return;
     try {
         await request.jwtVerify();
