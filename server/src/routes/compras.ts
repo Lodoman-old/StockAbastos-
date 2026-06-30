@@ -60,19 +60,19 @@ export async function comprasRoutes(app: FastifyInstance) {
     app.post<{ Body: {
         proveedor?: string;
         fecha?: string;
+        costo_total?: number;
         tarimas: Array<{
             producto_id: string;
             tarima_tipo_id?: string;
             cantidad: number;
             peso_kg?: number;
-            costo_por_kg?: number;
             compra_por_cajas?: boolean;
             cajas_directas?: number;
             fecha_caducidad?: string;
             bodega_id: string;
         }>;
     } }>("/", async (request, reply) => {
-        const { proveedor, fecha, tarimas } = request.body;
+        const { proveedor, fecha, costo_total, tarimas } = request.body;
         if (!tarimas || !tarimas.length) return reply.status(400).send({ error: "Agrega al menos una tarima" });
         return transaction(async (client) => {
             const hoy = new Date().toISOString().substring(0, 10).replace(/-/g, "");
@@ -84,15 +84,16 @@ export async function comprasRoutes(app: FastifyInstance) {
                 VALUES ($1, 'PENDIENTE', $2, $3, 0.001, 0.001) RETURNING *
             `, [padreCodigo, proveedor || null, fecha || new Date().toISOString().substring(0, 10)]);
 
+            const totalCost = costo_total || 0;
             const compra = await client.query(
                 "INSERT INTO compras (proveedor, total, fecha) VALUES ($1, $2, $3) RETURNING *",
-                [proveedor || null, 0, fecha || new Date().toISOString().substring(0, 10)]
+                [proveedor || null, totalCost, fecha || new Date().toISOString().substring(0, 10)]
             );
             const compraId = compra.rows[0].id;
-            let total = 0;
             let tarimaSeq = 1;
             const lotes: any[] = [];
             let hijoIndex = 1;
+            const detallePesos: { detalleId?: number; peso: number }[] = [];
 
             const grouped = tarimas.reduce((acc, t) => {
                 if (!acc[t.producto_id]) acc[t.producto_id] = [];
@@ -115,7 +116,6 @@ export async function comprasRoutes(app: FastifyInstance) {
                         pesoTotalLote += t.peso_kg ? Number(t.peso_kg) : 0;
                     } else {
                         const tp = await client.query("SELECT cantidad_cajas FROM tarimas_tipos WHERE id = $1", [t.tarima_tipo_id]);
-                        const cajasPorTarima = parseInt(tp.rows[0]?.cantidad_cajas, 10) || 1;
                         const pesoPorTarima = t.peso_kg ? Number(t.peso_kg) : 0;
                         const numTarimas = t.cantidad || 1;
                         pesoTotalLote += pesoPorTarima * numTarimas;
@@ -133,27 +133,20 @@ export async function comprasRoutes(app: FastifyInstance) {
                 const tipoDefault = tipoCajaSuelta.rows[0]?.id;
                 for (const t of items) {
                     let cajasPorItem = 0;
-                    let itemCostoTotal = 0;
                     let tarimaTipoId = t.tarima_tipo_id && t.tarima_tipo_id.length >= 36 ? t.tarima_tipo_id : (tipoDefault || (await client.query("SELECT id FROM tarimas_tipos WHERE activo = true ORDER BY cantidad_cajas ASC LIMIT 1")).rows[0]?.id);
                     let numTarimas = t.compra_por_cajas ? 1 : t.cantidad;
-                    let precioCompra = null;
+                    let itemPeso = 0;
 
                     if (esUnidad) {
-                        precioCompra = t.costo_por_kg || null;
-                        itemCostoTotal = (precioCompra || 0) * (t.cajas_directas || t.cantidad || 1);
                         cajasPorItem = t.cajas_directas || 1;
+                        itemPeso = t.cajas_directas || t.cantidad || 1;
                     } else if (t.compra_por_cajas) {
                         cajasPorItem = t.cajas_directas || 1;
-                        const pesoKg = t.peso_kg ? Number(t.peso_kg) : 0;
-                        precioCompra = t.costo_por_kg || null;
-                        itemCostoTotal = (precioCompra || 0) * pesoKg;
+                        itemPeso = t.peso_kg ? Number(t.peso_kg) : 0;
                     } else {
                         const tp = await client.query("SELECT cantidad_cajas FROM tarimas_tipos WHERE id = $1", [t.tarima_tipo_id]);
-                        const cajasPorTarima = parseInt(tp.rows[0]?.cantidad_cajas, 10) || 1;
-                        cajasPorItem = cajasPorTarima;
-                        const pesoTotal = (t.peso_kg ? Number(t.peso_kg) : 0) * t.cantidad;
-                        precioCompra = t.costo_por_kg || null;
-                        itemCostoTotal = (precioCompra || 0) * pesoTotal;
+                        cajasPorItem = parseInt(tp.rows[0]?.cantidad_cajas, 10) || 1;
+                        itemPeso = (t.peso_kg ? Number(t.peso_kg) : 0) * t.cantidad;
                     }
 
                     for (let i = 1; i <= numTarimas; i++) {
@@ -165,16 +158,27 @@ export async function comprasRoutes(app: FastifyInstance) {
                         `, [lote.rows[0].id, t.producto_id, tarimaTipoId, i, pesoKgTarima, codigoQr, t.bodega_id, t.fecha_caducidad || null, cajasPorItem]);
                         tarimaSeq++;
                     }
-                    total += itemCostoTotal;
 
-                    await client.query(
-                        "INSERT INTO compra_detalles (compra_id, producto_id, lote_id, precio_compra) VALUES ($1, $2, $3, $4)",
-                        [compraId, t.producto_id, lote.rows[0].id, precioCompra]
+                    const det = await client.query(
+                        "INSERT INTO compra_detalles (compra_id, producto_id, lote_id, precio_compra) VALUES ($1, $2, $3, $4) RETURNING id",
+                        [compraId, t.producto_id, lote.rows[0].id, null]
                     );
+                    detallePesos.push({ detalleId: det.rows[0].id, peso: itemPeso });
                 }
             }
 
-            await client.query("UPDATE compras SET total = $1 WHERE id = $2", [total, compraId]);
+            if (totalCost > 0 && detallePesos.length) {
+                const totalPeso = detallePesos.reduce((s, d) => s + d.peso, 0);
+                for (const d of detallePesos) {
+                    const precio = totalPeso > 0 ? (totalCost * d.peso) / totalPeso : totalCost / detallePesos.length;
+                    await client.query("UPDATE compra_detalles SET precio_compra = $1 WHERE id = $2", [precio, d.detalleId]);
+                }
+            }
+
+            if (totalCost > 0) {
+                await client.query("UPDATE compras SET total = $1 WHERE id = $2", [totalCost, compraId]);
+            }
+
             const result = await client.query("SELECT * FROM compras WHERE id = $1", [compraId]);
             return {
                 ...result.rows[0],
@@ -184,10 +188,10 @@ export async function comprasRoutes(app: FastifyInstance) {
         });
     });
 
-    app.put<{ Params: { id: string }; Body: { proveedor?: string; fecha?: string } }>("/:id", async (request, reply) => {
+    app.put<{ Params: { id: string }; Body: { proveedor?: string; fecha?: string; costo_total?: number } }>("/:id", async (request, reply) => {
         const { id } = request.params;
-        const { proveedor, fecha } = request.body;
-        if (!proveedor && !fecha) return reply.status(400).send({ error: "Nada que actualizar" });
+        const { proveedor, fecha, costo_total } = request.body;
+        if (!proveedor && !fecha && costo_total === undefined) return reply.status(400).send({ error: "Nada que actualizar" });
         return transaction(async (client) => {
             const c = await client.query("SELECT * FROM compras WHERE id = $1", [id]);
             if (!c.rows.length) return reply.status(404).send({ error: "Compra no encontrada" });
@@ -200,6 +204,10 @@ export async function comprasRoutes(app: FastifyInstance) {
             if (fecha !== undefined) {
                 updates.push("fecha = $" + (params.length + 1));
                 params.push(fecha);
+            }
+            if (costo_total !== undefined) {
+                updates.push("total = $" + (params.length + 1));
+                params.push(costo_total);
             }
             params.push(id);
             await client.query(`UPDATE compras SET ${updates.join(", ")} WHERE id = $${params.length}`, params);
@@ -223,6 +231,22 @@ export async function comprasRoutes(app: FastifyInstance) {
             if (loteUpdates.length) {
                 for (const pid of padreIds) {
                     await client.query(`UPDATE lotes SET ${loteUpdates.join(", ")} WHERE id = $${loteParams.length + 1}`, [...loteParams, pid]);
+                }
+            }
+
+            if (costo_total !== undefined && costo_total > 0) {
+                const piesos = await client.query("SELECT id, lote_id FROM compra_detalles WHERE compra_id = $1", [id]);
+                const totalPeso = { value: 0 };
+                const detallePesos: { detalleId: string; peso: number }[] = [];
+                for (const d of piesos.rows) {
+                    const l = await client.query("SELECT cantidad_recibida_kg FROM lotes WHERE id = $1", [d.lote_id]);
+                    const peso = parseFloat(l.rows[0]?.cantidad_recibida_kg || "0");
+                    detallePesos.push({ detalleId: d.id, peso });
+                    totalPeso.value += peso;
+                }
+                for (const d of detallePesos) {
+                    const precio = totalPeso.value > 0 ? (costo_total * d.peso) / totalPeso.value : costo_total / detallePesos.length;
+                    await client.query("UPDATE compra_detalles SET precio_compra = $1 WHERE id = $2", [precio, d.detalleId]);
                 }
             }
 
