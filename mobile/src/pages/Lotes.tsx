@@ -1,19 +1,35 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { get } from "../services/api";
 
+const estadoColor: Record<string, string> = {
+    PENDIENTE: "#ff9800", RECIBIDO: "#4caf50", DISPONIBLE: "#2196f3",
+    TRASPASADO: "#9c27b0", APARTADO: "#607d8b", VENDIDO: "#333", MERMA: "#f44336",
+};
+
 export function Lotes() {
     const navigate = useNavigate();
-    const [lotes, setLotes] = useState<any[]>([]);
+    const [grupos, setGrupos] = useState<any[]>([]);
     const [error, setError] = useState("");
+    const [expandidos, setExpandidos] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
-        get("/lotes").then(setLotes).catch((e) => setError(e.message));
+        get("/lotes").then((lotes: any[]) => {
+            const padres = lotes.filter((x: any) => !x.lote_padre_id);
+            const hijos = lotes.filter((x: any) => x.lote_padre_id);
+            const hijosPorPadre: Record<string, any[]> = {};
+            for (const h of hijos) {
+                if (!hijosPorPadre[h.lote_padre_id]) hijosPorPadre[h.lote_padre_id] = [];
+                hijosPorPadre[h.lote_padre_id].push(h);
+            }
+            setGrupos(padres.map((p: any) => ({
+                ...p,
+                hijos: hijosPorPadre[p.id] || [],
+            })).filter((g: any) => g.hijos.length > 0));
+        }).catch((e) => setError(e.message));
     }, []);
 
     if (error) return <><div className="header" style={{ marginBottom: 16 }}><span className="header-back" onClick={() => navigate("/")}>←</span><h1>Lotes</h1></div><div className="page"><p style={{ color: "#f44336" }}>Error: {error}</p></div></>;
-
-    if (lotes.length === 0) return <><div className="header" style={{ marginBottom: 16 }}><span className="header-back" onClick={() => navigate("/")}>←</span><h1>Lotes</h1></div><div className="page"><p style={{ color: "#888" }}>Sin lotes activos</p></div></>;
 
     return (
         <>
@@ -22,29 +38,54 @@ export function Lotes() {
                 <h1>Lotes</h1>
             </div>
             <div className="page">
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {lotes.map((l: any) => (
-                <div key={l.id} style={{
-                    background: "#fff", borderRadius: 10, padding: 12,
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <strong>{l.codigo_lote}</strong>
-                        <span style={{
-                            fontSize: 11, padding: "2px 8px", borderRadius: 4,
-                            background: l.estado === "ACTIVO" || l.estado === "DISPONIBLE" ? "#e8f5e9" : l.estado === "APARTADO" || l.estado === "RECIBIDO" ? "#fff3e0" : "#fce4ec",
-                            color: l.estado === "ACTIVO" || l.estado === "DISPONIBLE" ? "#2e7d32" : l.estado === "APARTADO" || l.estado === "RECIBIDO" ? "#e65100" : "#c62828",
-                        }}>{l.estado}</span>
+                {grupos.length === 0 ? (
+                    <p style={{ color: "#888", textAlign: "center", marginTop: 40 }}>Sin lotes activos</p>
+                ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        {grupos.map((g: any) => {
+                            const expand = expandidos[g.id];
+                            return (
+                                <div key={g.id} style={{ background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+                                    <div onClick={() => setExpandidos(prev => ({ ...prev, [g.id]: !prev[g.id] }))}
+                                        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 14, cursor: "pointer", borderLeft: `4px solid ${estadoColor[g.estado] || "#ccc"}` }}>
+                                        <div>
+                                            <strong style={{ fontSize: 14 }}>{g.codigo_lote}</strong>
+                                            <span style={{ marginLeft: 8, padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: "bold", background: `${estadoColor[g.estado] || "#eee"}22`, color: estadoColor[g.estado] || "#888" }}>
+                                                {g.estado}
+                                            </span>
+                                            <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
+                                                {g.proveedor_nombre || "Sin proveedor"} · {g.hijos.length} producto(s) · {new Date(g.fecha_recepcion).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                        <span style={{ fontSize: 12, color: "#999", transition: "transform 0.2s", transform: expand ? "rotate(180deg)" : "rotate(0deg)" }}>▼</span>
+                                    </div>
+                                    {expand && (
+                                        <div style={{ padding: "0 14px 14px", borderTop: "1px solid #eee" }}>
+                                            {g.hijos.map((h: any) => (
+                                                <div key={h.id} style={{ padding: "10px 0", borderBottom: "1px solid #f5f5f5" }}>
+                                                    <div style={{ fontSize: 14, fontWeight: "bold" }}>{h.producto_nombre}</div>
+                                                    <div style={{ fontSize: 12, color: "#555", marginTop: 4 }}>
+                                                        <span>Código: {h.codigo_lote}</span>
+                                                    </div>
+                                                    <div style={{ fontSize: 12, color: "#555" }}>
+                                                        <span>{parseFloat(h.cantidad_recibida_kg || 0).toFixed(1)} kg · {h.total_tarimas} tarima(s)</span>
+                                                        <span style={{ marginLeft: 8, padding: "1px 6px", borderRadius: 4, fontSize: 11, background: `${estadoColor[h.estado] || "#eee"}22`, color: estadoColor[h.estado] || "#888" }}>
+                                                            {h.estado}
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
+                                                        {h.bodega_nombre}{h.fecha_caducidad ? ` · Cad: ${new Date(h.fecha_caducidad).toLocaleDateString()}` : ""}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
-                    <div style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
-                        {l.producto_nombre} · {parseFloat(l.cantidad_actual_kg).toFixed(1)} kg · {l.total_cajas || 0} cajas
-                    </div>
-                    <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
-                        {l.bodega_nombre} · Cad: {new Date(l.fecha_caducidad).toLocaleDateString()}
-                    </div>
-                </div>
-            ))}
-        </div>
-        </div></>
+                )}
+            </div>
+        </>
     );
 }
