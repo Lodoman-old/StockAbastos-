@@ -27,7 +27,7 @@ export function ScanPage() {
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 250, height: 250 } },
       (decodedText) => {
-        qr.stop().catch(() => {});
+        try { qr.stop(); } catch {}
         setScanning(false);
         procesar(decodedText);
       },
@@ -38,7 +38,7 @@ export function ScanPage() {
     });
 
     return () => {
-      qr.stop().catch(() => {});
+      try { qr.stop(); } catch {}
       if (navRef.current) clearTimeout(navRef.current);
     };
   }, []);
