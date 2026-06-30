@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Component, useState, useEffect } from "react";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { hasApiUrl } from "./api";
 import { iniciarMonitor, syncCatalogos } from "./sync";
 import { SetupPage } from "./pages/SetupPage";
@@ -24,6 +24,25 @@ import { Reportes } from "./pages/Reportes";
 import { HistorialPrecios } from "./pages/HistorialPrecios";
 import { Toast } from "./components/Toast";
 
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(e: Error) { return { error: e }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="page" style={{ textAlign: "center", paddingTop: 60 }}>
+          <h2>Error inesperado</h2>
+          <p style={{ color: "#888", fontSize: 13, marginBottom: 16 }}>{this.state.error.message}</p>
+          <button className="btn btn-primary" onClick={() => { this.setState({ error: null }); window.location.hash = "#/"; }}>
+            Volver al inicio
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function isAuthed() {
   return !!localStorage.getItem("token");
 }
@@ -45,31 +64,33 @@ export function App() {
   if (!ready) return null;
 
   return (
-    <BrowserRouter>
-      <Toast />
-      <Routes>
-        <Route path="/setup" element={<SetupPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/ventas" element={<ProtectedRoute><Ventas /></ProtectedRoute>} />
-        <Route path="/compras" element={<ProtectedRoute><Compras /></ProtectedRoute>} />
-        <Route path="/proveedores" element={<ProtectedRoute><Proveedores /></ProtectedRoute>} />
-        <Route path="/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
-        <Route path="/lotes" element={<ProtectedRoute><Lotes /></ProtectedRoute>} />
-        <Route path="/traspasos" element={<ProtectedRoute><Traspasos /></ProtectedRoute>} />
-        <Route path="/corte-caja" element={<ProtectedRoute><CorteDeCaja /></ProtectedRoute>} />
-        <Route path="/precios-diarios" element={<ProtectedRoute><PreciosDelDia /></ProtectedRoute>} />
-        <Route path="/prestamo-cajas" element={<ProtectedRoute><PrestamoCajas /></ProtectedRoute>} />
-        <Route path="/reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
-        <Route path="/historial-precios" element={<ProtectedRoute><HistorialPrecios /></ProtectedRoute>} />
-        <Route path="/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
-        <Route path="/receive/:codigoQr" element={<ProtectedRoute><ReceivePage /></ProtectedRoute>} />
-        <Route path="/confirmar-traspaso/:codigoQr" element={<ProtectedRoute><ConfirmTransferPage /></ProtectedRoute>} />
-        <Route path="/recibir-traspaso/:codigoQr" element={<ProtectedRoute><TransferReceivePage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <HashRouter>
+        <Toast />
+        <Routes>
+          <Route path="/setup" element={<SetupPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/ventas" element={<ProtectedRoute><Ventas /></ProtectedRoute>} />
+          <Route path="/compras" element={<ProtectedRoute><Compras /></ProtectedRoute>} />
+          <Route path="/proveedores" element={<ProtectedRoute><Proveedores /></ProtectedRoute>} />
+          <Route path="/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
+          <Route path="/lotes" element={<ProtectedRoute><Lotes /></ProtectedRoute>} />
+          <Route path="/traspasos" element={<ProtectedRoute><Traspasos /></ProtectedRoute>} />
+          <Route path="/corte-caja" element={<ProtectedRoute><CorteDeCaja /></ProtectedRoute>} />
+          <Route path="/precios-diarios" element={<ProtectedRoute><PreciosDelDia /></ProtectedRoute>} />
+          <Route path="/prestamo-cajas" element={<ProtectedRoute><PrestamoCajas /></ProtectedRoute>} />
+          <Route path="/reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
+          <Route path="/historial-precios" element={<ProtectedRoute><HistorialPrecios /></ProtectedRoute>} />
+          <Route path="/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
+          <Route path="/receive/:codigoQr" element={<ProtectedRoute><ReceivePage /></ProtectedRoute>} />
+          <Route path="/confirmar-traspaso/:codigoQr" element={<ProtectedRoute><ConfirmTransferPage /></ProtectedRoute>} />
+          <Route path="/recibir-traspaso/:codigoQr" element={<ProtectedRoute><TransferReceivePage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </HashRouter>
+    </ErrorBoundary>
   );
 }

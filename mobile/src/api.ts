@@ -45,7 +45,7 @@ async function request<T = any>(path: string, options: RequestInit = {}): Promis
   clearTimeout(timeout);
   if (res.status === 401) {
     clearSession();
-    window.location.href = "/setup";
+    window.location.hash = "#/setup";
     throw new Error("Sesión expirada");
   }
   if (!res.ok) {
