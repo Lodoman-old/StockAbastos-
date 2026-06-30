@@ -32,7 +32,10 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Er
       return (
         <div className="page" style={{ textAlign: "center", paddingTop: 60 }}>
           <h2>Error inesperado</h2>
-          <p style={{ color: "#888", fontSize: 13, marginBottom: 16 }}>{this.state.error.message}</p>
+          <p style={{ color: "#888", fontSize: 13, marginBottom: 16 }}>{this.state.error.message || "(sin mensaje)"}</p>
+          <pre style={{ fontSize: 10, textAlign: "left", maxHeight: 300, overflow: "auto", background: "#f5f5f5", padding: 12, borderRadius: 8, marginBottom: 16 }}>
+            {this.state.error.stack || ""}
+          </pre>
           <button className="btn btn-primary" onClick={() => { this.setState({ error: null }); window.location.hash = "#/"; }}>
             Volver al inicio
           </button>

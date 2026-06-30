@@ -30,6 +30,7 @@ import { pagosRoutes } from "./routes/pagos.js";
 import { tarimasTiposRoutes } from "./routes/tarimas_tipos.js";
 import { mostradorRoutes } from "./routes/mostrador.js";
 import { tarimasRoutes } from "./routes/tarimas.js";
+import { traspasosRoutes } from "./routes/traspasos.js";
 import { impresionRoutes } from "./routes/impresion.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -81,6 +82,7 @@ await app.register(tarimasTiposRoutes, { prefix: "/api/tarimas-tipos" });
 await app.register(tarimasRoutes, { prefix: "/api/tarimas" });
 await app.register(mostradorRoutes, { prefix: "/api/mostrador" });
 await app.register(impresionRoutes, { prefix: "/api/impresion" });
+await app.register(traspasosRoutes, { prefix: "/api/traspasos" });
 
 try {
     await app.listen({ port: config.port, host: "0.0.0.0" });
