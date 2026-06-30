@@ -29,8 +29,9 @@ export function iniciarMonitor() {
 async function fetchWithAuth(path: string, options: RequestInit = {}) {
   const base = getApiUrl();
   if (!base) throw new Error("API no configurada");
+  const apiPath = path.startsWith("/api/") ? path : `/api${path.startsWith("/") ? "" : "/"}${path}`;
   const token = getToken();
-  const res = await fetch(`${base}${path}`, {
+  const res = await fetch(`${base}${apiPath}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

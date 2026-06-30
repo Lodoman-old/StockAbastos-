@@ -29,8 +29,9 @@ function clearSession() {
 async function request<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const base = getApiUrl();
   if (!base) throw new Error("API no configurada");
+  const apiPath = path.startsWith("/api/") ? path : `/api${path.startsWith("/") ? "" : "/"}${path}`;
   const token = getToken();
-  const res = await fetch(`${base}${path}`, {
+  const res = await fetch(`${base}${apiPath}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
