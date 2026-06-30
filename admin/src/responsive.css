@@ -6,8 +6,10 @@
 
 /* ALL tables: scrollable on small screens */
 @media (max-width: 768px) {
-  .table-wrap, div[style*="overflow"]:has(table) { overflow-x: auto; }
+  .table-wrap, div[style*="overflow"]:has(table) { overflow-x: auto !important; }
   table { min-width: 0 !important; }
+  /* Fix for inline overflowX auto not working in some contexts */
+  div[style*="overflowX"]:not([style*="width"]) { width: 100%; }
 }
 
 /* Table: convert to stacked cards on small screens */
@@ -81,6 +83,14 @@
 @media (max-width: 480px) {
   .btn-group { flex-direction: column !important; }
   .btn-group > * { width: 100% !important; }
+  /* Button next to select/input: stack on mobile */
+  .btn-inline-group { flex-direction: column !important; align-items: stretch !important; }
+  .btn-inline-group > * { width: 100% !important; }
+}
+
+/* Form grid: single column on mobile */
+@media (max-width: 480px) {
+  .form-grid-2 { grid-template-columns: 1fr !important; }
 }
 
 /* Form inputs: full width on mobile */
@@ -125,6 +135,13 @@
 @media (max-width: 768px) {
   .bodega-section { flex-direction: column !important; }
   .bodega-section > div { width: 100% !important; }
+}
+
+/* Scan inputs row: stack vertically on mobile */
+@media (max-width: 480px) {
+  .scan-row { flex-direction: column !important; align-items: stretch !important; }
+  .scan-row input { width: 100% !important; flex: none !important; }
+  .scan-row button { width: 100% !important; flex: none !important; margin-left: 0 !important; }
 }
 
 /* Login card: less padding on mobile */

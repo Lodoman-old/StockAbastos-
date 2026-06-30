@@ -22,7 +22,7 @@ export function ReporteCompras() {
     return (
         <div>
             <h1>Reporte de Compras</h1>
-            <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+            <div className="btn-inline-group" style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
                 <div>
                     <label style={{ fontSize: 12, color: "#555", display: "block" }}>Desde</label>
                     <input type="date" value={desde} onChange={e => setDesde(e.target.value)}

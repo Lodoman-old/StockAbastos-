@@ -80,7 +80,7 @@ export function RecepcionTarimas() {
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
                 <h1 style={{ margin: 0 }}>Recepción de Lotes</h1>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div className="btn-inline-group" style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <select value={bodegaId} onChange={e => setBodegaId(e.target.value)}
                         style={{ padding: "8px 12px", border: "1px solid #ddd", borderRadius: 8, fontSize: 13 }}>
                         <option value="">Bodega (opcional — usar lote)</option>
@@ -89,7 +89,7 @@ export function RecepcionTarimas() {
                 </div>
             </div>
 
-            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            <div className="scan-row" style={{ display: "flex", gap: 8, marginBottom: 16 }}>
                 <input value={scanInput} onChange={e => setScanInput(e.target.value)}
                     placeholder="Escanear o escribir código QR..."
                     style={{ flex: 1, padding: "10px 14px", fontSize: 15, border: "1px solid #1976d2", borderRadius: 8, fontFamily: "monospace" }} />

@@ -126,9 +126,9 @@ export function Compras() {
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
                 <h1 style={{ margin: 0 }}>Compras del día</h1>
-                <div style={{ display: "flex", gap: 8 }}>
-                    <Link to="/reporte-compras" style={{ padding: "8px 16px", background: "#2196f3", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: "bold", textDecoration: "none" }}>Reporte de Compras</Link>
-                    <button onClick={cargarModal} style={{ padding: "8px 16px", background: "#1a8a3a", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: "bold" }}>+ Nueva Compra</button>
+                <div className="btn-inline-group" style={{ display: "flex", gap: 8 }}>
+                    <Link to="/reporte-compras" style={{ padding: "8px 16px", background: "#2196f3", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: "bold", textDecoration: "none", whiteSpace: "nowrap" }}>Reporte de Compras</Link>
+                    <button onClick={cargarModal} style={{ padding: "8px 16px", background: "#1a8a3a", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: "bold", whiteSpace: "nowrap" }}>+ Nueva Compra</button>
                 </div>
             </div>
 

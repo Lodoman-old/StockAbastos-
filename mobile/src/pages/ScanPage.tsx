@@ -13,6 +13,7 @@ export function ScanPage() {
   const [scanning, setScanning] = useState(true);
   const [manual, setManual] = useState("");
   const [procesando, setProcesando] = useState(false);
+  const navRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -38,6 +39,7 @@ export function ScanPage() {
 
     return () => {
       qr.stop().catch(() => {});
+      if (navRef.current) clearTimeout(navRef.current);
     };
   }, []);
 
@@ -56,7 +58,11 @@ export function ScanPage() {
         await post(`/tarimas/recibir/${encodeURIComponent(qr)}`, {});
         notify("Tarima recibida", "success");
       }
-      setTimeout(() => navigate("/"), 1500);
+      navRef.current = setTimeout(() => {
+        try { navigate("/"); } catch (e: any) {
+          try { localStorage.setItem("scan_error", JSON.stringify({ message: e.message, stack: e.stack, ...e })); } catch {}
+        }
+      }, 1500);
     } catch (e: any) {
       notify("Error: " + (e.message || "Desconocido"), "error");
       setProcesando(false);

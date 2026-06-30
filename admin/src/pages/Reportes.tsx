@@ -48,7 +48,14 @@ export function Reportes() {
     useEffect(() => { load(); }, []);
 
     if (loading) return <p style={{ color: "#888" }}>Cargando reportes...</p>;
-    if (!data) return <p style={{ color: "#f44336" }}>Error al cargar reportes</p>;
+    if (!data) return (
+      <div>
+        <p style={{ color: "#f44336" }}>Error al cargar reportes. El servidor no respondió.</p>
+        <button onClick={load} style={{ padding: "8px 16px", background: "#1a8a3a", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: "bold" }}>
+          Reintentar
+        </button>
+      </div>
+    );
 
     const maxKg = Math.max(...(data.top_productos || []).map((p: any) => parseFloat(p.total_kg)), 1);
     const maxIngreso = Math.max(...(data.ingresos_mensuales || []).map((m: any) => parseFloat(m.ingresos)), 1);

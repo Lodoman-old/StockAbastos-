@@ -24,19 +24,51 @@ import { Reportes } from "./pages/Reportes";
 import { HistorialPrecios } from "./pages/HistorialPrecios";
 import { Toast } from "./components/Toast";
 
+function safeStringify(obj: any): string {
+  try {
+    const seen = new Set();
+    return JSON.stringify(obj, (key, val) => {
+      if (typeof val === "object" && val !== null) {
+        if (seen.has(val)) return "[Circular]";
+        seen.add(val);
+      }
+      if (val !== val) return "NaN";
+      if (typeof val === "bigint") return val.toString();
+      if (val instanceof Error) return { message: val.message, stack: val.stack, name: val.name };
+      return val;
+    }, 2);
+  } catch { return String(obj); }
+}
+
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: any }> {
   state = { error: null };
   static getDerivedStateFromError(e: any) { return { error: e }; }
+  componentDidCatch(error: any, info: any) {
+    try { localStorage.setItem("errorboundary_dump", JSON.stringify({ t: typeof error, c: error?.constructor?.name, msg: String(error?.message ?? "?"), stack: String(error?.stack ?? "?").slice(0, 300) })); } catch {}
+  }
   render() {
     if (this.state.error) {
       const err = this.state.error;
-      const dump = typeof err === "object" ? JSON.stringify({ message: err.message, stack: err.stack, ...err }, null, 2) : String(err);
+      const tipo = typeof err;
+      let constructor = "?";
+      let keys = "—";
+      let msg = "—";
+      let stk = "—";
+      try { constructor = err?.constructor?.name || "?"; } catch {}
+      try { keys = Object.keys(err || {}).join(",") || "—"; } catch {}
+      try { msg = String(err?.message ?? "—"); } catch {}
+      try { stk = String(err?.stack ?? "—").slice(0, 200); } catch {}
       return (
         <div className="page" style={{ textAlign: "center", paddingTop: 60 }}>
-          <h2>Error inesperado</h2>
-          <pre style={{ fontSize: 10, textAlign: "left", maxHeight: 300, overflow: "auto", background: "#f5f5f5", padding: 12, borderRadius: 8, marginBottom: 16, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
-            {dump}
-          </pre>
+          <h2 style={{ color: "#b71c1c" }}>Error inesperado</h2>
+          <div style={{ fontSize: 12, textAlign: "left", background: "#fff", border: "2px solid #b71c1c", padding: 12, borderRadius: 8, marginBottom: 16, wordBreak: "break-all" }}>
+            <p><b>Tipo:</b> {tipo}</p>
+            <p><b>Constructor:</b> {constructor}</p>
+            <p><b>Keys:</b> {keys}</p>
+            <p><b>message:</b> {msg}</p>
+            <p><b>stack:</b> {stk}</p>
+            <p><b>VALOR:</b> {String(err).slice(0, 200)}</p>
+          </div>
           <button className="btn btn-primary" onClick={() => { this.setState({ error: null }); window.location.hash = "#/"; }}>
             Volver al inicio
           </button>
@@ -60,6 +92,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export function App() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
+    window.addEventListener("error", (e) => {
+      try { localStorage.setItem("global_error", safeStringify({ message: e.message, filename: e.filename, lineno: e.lineno, colno: e.colno, error: e.error })); } catch {}
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      try { localStorage.setItem("unhandled_rejection", safeStringify({ reason: e.reason })); } catch {}
+    });
+
     iniciarMonitor();
     if (isAuthed() && navigator.onLine) syncCatalogos();
     setReady(true);

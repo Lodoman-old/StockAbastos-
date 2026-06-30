@@ -52,7 +52,7 @@ export function Impresoras() {
 
       {msg && <p style={{ padding: 8, background: "#e8f5e9", borderRadius: 8 }}>{msg}</p>}
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      <div className="btn-inline-group" style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <button className="btn" style={{ flex: 1, background: tab === "impresoras" ? "#1a8a3a" : "#ddd", color: tab === "impresoras" ? "#fff" : "#333" }}
           onClick={() => setTab("impresoras")}>Impresoras</button>
         <button className="btn" style={{ flex: 1, background: tab === "cola" ? "#1a8a3a" : "#ddd", color: tab === "cola" ? "#fff" : "#333" }}
@@ -63,7 +63,7 @@ export function Impresoras() {
         <>
           <div style={{ background: "#fff", borderRadius: 12, padding: 16, marginBottom: 16 }}>
             <h3>{editingId ? "Editar impresora" : "Nueva impresora"}</h3>
-            <div style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr" }}>
+            <div className="form-grid-2" style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr" }}>
               <input className="input" placeholder="Nombre" value={form.nombre}
                 onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))} />
               <select className="input" value={form.tipo}

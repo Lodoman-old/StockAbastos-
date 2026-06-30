@@ -85,7 +85,7 @@ export function RecepcionTraspaso() {
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
                 <h1 style={{ margin: 0 }}>Recepción en Bodega Destino</h1>
-                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <div className="btn-inline-group" style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                     <select value={bodegaFiltro} onChange={e => setBodegaFiltro(e.target.value)} style={inputBase}>
                         <option value="">Todas las bodegas destino</option>
                         {destinos.map(d => (
@@ -100,7 +100,7 @@ export function RecepcionTraspaso() {
             </div>
 
             <div style={{ ...cardStyle, marginBottom: 16 }}>
-                <form onSubmit={handleScanSubmit} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <form onSubmit={handleScanSubmit} className="scan-row" style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <input ref={inputRef} autoFocus value={scanValue} onChange={e => setScanValue(e.target.value)}
                         placeholder="Escanea o escribe código QR de la tarima..."
                         style={{ ...inputBase, flex: 1 }} />
