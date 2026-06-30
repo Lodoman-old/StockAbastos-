@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { get } from "../services/api";
+import { get, getApiUrl } from "../api";
 
 const estadoColor: Record<string, string> = {
     PENDIENTE: "#ff9800", RECIBIDO: "#4caf50", DISPONIBLE: "#2196f3",
@@ -11,6 +11,8 @@ export function Lotes() {
     const navigate = useNavigate();
     const [grupos, setGrupos] = useState<any[]>([]);
     const [error, setError] = useState("");
+    const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+    const esAdmin = usuario.rol === "admin" || usuario.rol === "supervisor";
     const [expandidos, setExpandidos] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
@@ -76,6 +78,12 @@ export function Lotes() {
                                                     <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
                                                         {h.bodega_nombre}{h.fecha_caducidad ? ` · Cad: ${new Date(h.fecha_caducidad).toLocaleDateString()}` : ""}
                                                     </div>
+                                                    {esAdmin && parseInt(h.pendientes || 0) > 0 && (
+                                                        <button onClick={() => window.open(`${getApiUrl()}/api/tarimas/qr-lote/${h.id}`, "_blank")}
+                                                            style={{ marginTop: 6, padding: "4px 10px", background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11 }}>
+                                                            Imprimir QR
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
