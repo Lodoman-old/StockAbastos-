@@ -13,16 +13,13 @@ export function ScanPage() {
   const [scanning, setScanning] = useState(true);
   const [manual, setManual] = useState("");
   const [procesando, setProcesando] = useState(false);
-  const navRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  const iniciarScanner = () => {
     if (!containerRef.current) return;
     const id = "qr-reader";
     containerRef.current.innerHTML = `<div id="${id}"></div>`;
-
     const qr = new Html5Qrcode(id);
     scannerRef.current = qr;
-
     qr.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 250, height: 250 } },
@@ -32,14 +29,17 @@ export function ScanPage() {
         procesar(decodedText);
       },
       () => {}
-    ).catch((err) => {
+    ).then(() => setScanning(true))
+    .catch((err) => {
       notify("Error al abrir cámara: " + err, "error");
       setScanning(false);
     });
+  };
 
+  useEffect(() => {
+    iniciarScanner();
     return () => {
-      try { qr.stop(); } catch {}
-      if (navRef.current) clearTimeout(navRef.current);
+      try { scannerRef.current?.stop(); } catch {}
     };
   }, []);
 
@@ -58,15 +58,12 @@ export function ScanPage() {
         await post(`/tarimas/recibir/${encodeURIComponent(qr)}`, {});
         notify("Tarima recibida", "success");
       }
-      navRef.current = setTimeout(() => {
-        try { navigate("/"); } catch (e: any) {
-          try { localStorage.setItem("scan_error", JSON.stringify({ message: e.message, stack: e.stack, ...e })); } catch {}
-        }
-      }, 1500);
+      setTimeout(() => iniciarScanner(), 500);
     } catch (e: any) {
       notify("Error: " + (e.message || "Desconocido"), "error");
-      setProcesando(false);
+      setTimeout(() => iniciarScanner(), 500);
     }
+    setProcesando(false);
   };
 
   const handleManual = () => {
@@ -86,8 +83,8 @@ export function ScanPage() {
 
       <div className="card">
         <div ref={containerRef} className="scanner-container" style={{ minHeight: 250, background: "#000", borderRadius: 12 }} />
-        {!scanning && (
-          <button className="btn btn-primary" onClick={() => window.location.reload()} style={{ marginTop: 12 }}>
+        {!scanning && !procesando && (
+          <button className="btn btn-primary" onClick={iniciarScanner} style={{ marginTop: 12 }}>
             Volver a escanear
           </button>
         )}

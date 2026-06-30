@@ -8,8 +8,8 @@
 @media (max-width: 768px) {
   .table-wrap, div[style*="overflow"]:has(table) { overflow-x: auto !important; }
   table { min-width: 0 !important; }
-  /* Fix for inline overflowX auto not working in some contexts */
-  div[style*="overflowX"]:not([style*="width"]) { width: 100%; }
+  /* Fix for inline overflow-x auto not working in some contexts */
+  div[style*="overflow-x"]:not([style*="width"]) { width: 100%; }
 }
 
 /* Table: convert to stacked cards on small screens */
