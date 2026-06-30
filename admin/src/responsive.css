@@ -4,11 +4,17 @@
    - lg: 1024px (small laptops)
 */
 
+/* ALL tables: scrollable on small screens */
+@media (max-width: 768px) {
+  .table-wrap, div[style*="overflow"]:has(table) { overflow-x: auto; }
+  table { min-width: 0 !important; }
+}
+
 /* Table: convert to stacked cards on small screens */
 @media (max-width: 768px) {
   .responsive-table thead { display: none; }
+  .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; }
   .responsive-table tr {
-    display: block;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 10px;
@@ -33,6 +39,11 @@
     flex-shrink: 0;
   }
   .responsive-table td:last-child { border-bottom: none !important; }
+}
+
+/* Tables without responsive-table class: scroll + compact on mobile */
+@media (max-width: 768px) {
+  table:not(.responsive-table) { display: block; width: 100%; overflow-x: auto; font-size: 13px; }
 }
 
 /* Modal: full screen on mobile */

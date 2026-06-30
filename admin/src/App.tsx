@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Productos } from "./pages/Productos";
@@ -278,7 +278,7 @@ export function App() {
     }
 
     return (
-        <BrowserRouter>
+        <HashRouter>
             <style>{styles}</style>
             <AdminLayout sidebarOpen={sidebarOpen} onToggle={() => setSidebarOpen(o => !o)} onLogout={() => setAuthed(false)}>
                 <Routes>
@@ -315,6 +315,6 @@ export function App() {
                     <Route path="*" element={<Navigate to="/dashboard" />} />
                 </Routes>
             </AdminLayout>
-        </BrowserRouter>
+        </HashRouter>
     );
 }
