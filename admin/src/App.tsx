@@ -33,6 +33,7 @@ import { POSMenudeo } from "./pages/POSMenudeo";
 import { Impresoras } from "./pages/Impresoras";
 import { ToastContainer } from "./components/Toast";
 import { isAuthenticated, clearSession } from "./services/auth";
+const API_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + "/api" : "/api";
 
 function getUsuario(): any {
     try {
@@ -139,7 +140,7 @@ function AdminLayout({ children, sidebarOpen, onToggle, onLogout }: { children: 
         if (tienePermiso("ver_ventas")) {
             (async () => {
                 try {
-                    const res = await fetch("/api/precios-diarios/pendientes", { headers });
+                    const res = await fetch(`${API_BASE}/precios-diarios/pendientes`, { headers });
                     const data = await res.json();
                     setPreciosPendientes(data.filter((p: any) => !p.precio_hoy_kg).length);
                 } catch {}
@@ -148,14 +149,14 @@ function AdminLayout({ children, sidebarOpen, onToggle, onLogout }: { children: 
         if (tienePermiso("ver_reportes")) {
             (async () => {
                 try {
-                    const res = await fetch("/api/dashboard/reportes", { headers });
+                    const res = await fetch(`${API_BASE}/dashboard/reportes`, { headers });
                     const data = await res.json();
                     setStockBajo(data.productos_bajo_stock || []);
                 } catch {}
             })();
             (async () => {
                 try {
-                    const res = await fetch("/api/tarimas/por-vencer", { headers });
+                    const res = await fetch(`${API_BASE}/tarimas/por-vencer`, { headers });
                     const data = await res.json();
                     setPorVencer(data);
                 } catch {}

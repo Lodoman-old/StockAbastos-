@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { get, put } from "../services/api";
+import { get, put, API } from "../services/api";
 
 export function Configuracion() {
     const [config, setConfig] = useState<Record<string, string>>({});
@@ -32,7 +32,7 @@ export function Configuracion() {
         const fd = new FormData();
         fd.append("file", file);
         try {
-            const res = await fetch("/api/configuracion/upload-logo", {
+            const res = await fetch(`${API}/configuracion/upload-logo`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                 body: fd,

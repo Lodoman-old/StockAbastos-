@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { get, post } from "../services/api";
+import { get, post, API } from "../services/api";
 import { notify } from "../components/Toast";
 
 function openQrPrint(loteId: string) {
     const token = localStorage.getItem("token");
-    fetch(`/api/tarimas/qr-lote/${loteId}`, {
+    fetch(`${API}/tarimas/qr-lote/${loteId}`, {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     }).then(r => r.text()).then(html => {
         const w = window.open("", "_blank");

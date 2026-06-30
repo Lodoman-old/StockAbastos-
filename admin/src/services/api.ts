@@ -1,6 +1,6 @@
 import { getToken, logout } from "./auth";
 
-const API = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + "/api" : "/api";
+export const API = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + "/api" : "/api";
 
 async function request<T = any>(path: string, options: RequestInit = {}): Promise<T> {
     const token = getToken();

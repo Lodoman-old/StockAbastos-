@@ -1,6 +1,6 @@
 import { money } from "../format";
 import React, { useEffect, useState } from "react";
-import { get, post } from "../services/api";
+import { get, post, API } from "../services/api";
 export function Productos() {
     const [productos, setProductos] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
@@ -58,7 +58,7 @@ export function Productos() {
             destare_kg: toNum(form.destare_kg),
         };
         if (editId) {
-            await fetch(`/api/productos/${editId}`, {
+            await fetch(`${API}/productos/${editId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem("token") },
                 body: JSON.stringify(payload),

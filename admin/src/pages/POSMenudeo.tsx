@@ -1,6 +1,6 @@
 import { money } from "../format";
 import React, { useEffect, useState } from "react";
-import { get, post } from "../services/api";
+import { get, post, API } from "../services/api";
 import { notify } from "../components/Toast";
 interface CartItem {
     producto_id: string;
@@ -145,7 +145,7 @@ export function POSMenudeo() {
         }));
         setCart(restored);
         setMsg("Venta reanudada");
-        fetch(`/api/ventas/pausadas/${paused.id}`, { method: "DELETE", headers: { Authorization: "Bearer " + localStorage.getItem("token") } }).catch(() => {});
+        fetch(`${API}/ventas/pausadas/${paused.id}`, { method: "DELETE", headers: { Authorization: "Bearer " + localStorage.getItem("token") } }).catch(() => {});
         setPausedSales((prev: any[]) => prev.filter(p => p.id !== paused.id));
     };
 
