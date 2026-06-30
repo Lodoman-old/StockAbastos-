@@ -98,11 +98,14 @@ export async function tarimasRoutes(app: FastifyInstance) {
         const r = await query(`
             SELECT t.*, tp.nombre AS tarima_tipo_nombre, tp.cantidad_cajas,
                    p.nombre AS producto_nombre, p.sku,
-                   l.codigo_lote, l.proveedor_nombre, l.fecha_recepcion
+                   l.codigo_lote, l.proveedor_nombre, l.fecha_recepcion,
+                   bo.nombre AS bodega_origen_nombre, bd.nombre AS bodega_destino_nombre
             FROM tarimas t
             JOIN tarimas_tipos tp ON tp.id = t.tarima_tipo_id
             JOIN productos p ON p.id = t.producto_id
             JOIN lotes l ON l.id = t.lote_id
+            LEFT JOIN bodegas bo ON bo.id = t.bodega_id
+            LEFT JOIN bodegas bd ON bd.id = t.bodega_destino_id
             WHERE t.codigo_qr = $1
         `, [codigoQr]);
         if (!r.rows.length) return reply.status(404).send({ error: "Tarima no encontrada" });
@@ -233,11 +236,14 @@ export async function tarimasRoutes(app: FastifyInstance) {
         const r = await query(`
             SELECT t.*, tp.nombre AS tarima_tipo_nombre, tp.cantidad_cajas,
                    p.nombre AS producto_nombre, p.sku,
-                   l.codigo_lote, l.proveedor_nombre, l.fecha_recepcion
+                   l.codigo_lote, l.proveedor_nombre, l.fecha_recepcion,
+                   bo.nombre AS bodega_origen_nombre, bd.nombre AS bodega_destino_nombre
             FROM tarimas t
             JOIN tarimas_tipos tp ON tp.id = t.tarima_tipo_id
             JOIN productos p ON p.id = t.producto_id
             JOIN lotes l ON l.id = t.lote_id
+            LEFT JOIN bodegas bo ON bo.id = t.bodega_id
+            LEFT JOIN bodegas bd ON bd.id = t.bodega_destino_id
             WHERE t.codigo_qr = $1
         `, [codigoQr]);
         if (!r.rows.length) return reply.status(404).send({ error: "Tarima no encontrada" });
