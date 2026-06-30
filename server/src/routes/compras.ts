@@ -184,6 +184,53 @@ export async function comprasRoutes(app: FastifyInstance) {
         });
     });
 
+    app.put<{ Params: { id: string }; Body: { proveedor?: string; fecha?: string } }>("/:id", async (request, reply) => {
+        const { id } = request.params;
+        const { proveedor, fecha } = request.body;
+        if (!proveedor && !fecha) return reply.status(400).send({ error: "Nada que actualizar" });
+        return transaction(async (client) => {
+            const c = await client.query("SELECT * FROM compras WHERE id = $1", [id]);
+            if (!c.rows.length) return reply.status(404).send({ error: "Compra no encontrada" });
+            const updates: string[] = [];
+            const params: any[] = [];
+            if (proveedor !== undefined) {
+                updates.push("proveedor = $" + (params.length + 1));
+                params.push(proveedor);
+            }
+            if (fecha !== undefined) {
+                updates.push("fecha = $" + (params.length + 1));
+                params.push(fecha);
+            }
+            params.push(id);
+            await client.query(`UPDATE compras SET ${updates.join(", ")} WHERE id = $${params.length}`, params);
+
+            const detalles = await client.query("SELECT lote_id FROM compra_detalles WHERE compra_id = $1", [id]);
+            const padreIds = new Set<string>();
+            for (const d of detalles.rows) {
+                const l = await client.query("SELECT lote_padre_id FROM lotes WHERE id = $1", [d.lote_id]);
+                if (l.rows[0]?.lote_padre_id) padreIds.add(l.rows[0].lote_padre_id);
+            }
+            const loteUpdates: string[] = [];
+            const loteParams: any[] = [];
+            if (proveedor !== undefined) {
+                loteUpdates.push("proveedor_nombre = $" + (loteParams.length + 1));
+                loteParams.push(proveedor);
+            }
+            if (fecha !== undefined) {
+                loteUpdates.push("fecha_recepcion = $" + (loteParams.length + 1));
+                loteParams.push(fecha);
+            }
+            if (loteUpdates.length) {
+                for (const pid of padreIds) {
+                    await client.query(`UPDATE lotes SET ${loteUpdates.join(", ")} WHERE id = $${loteParams.length + 1}`, [...loteParams, pid]);
+                }
+            }
+
+            const result = await client.query("SELECT * FROM compras WHERE id = $1", [id]);
+            return result.rows[0];
+        });
+    });
+
     app.delete<{ Params: { id: string } }>("/:id", async (request, reply) => {
         const { id } = request.params;
         return transaction(async (client) => {

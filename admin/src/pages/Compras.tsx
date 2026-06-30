@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { get, post, del } from "../services/api";
+import { get, post, put, del } from "../services/api";
 import { notify } from "../components/Toast";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 
@@ -24,6 +24,8 @@ export function Compras() {
     const [showProvList, setShowProvList] = useState(false);
     const provRef = useRef<HTMLDivElement>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<{ id: string } | null>(null);
+    const [editModal, setEditModal] = useState<{ id: string; proveedor: string; fecha: string } | null>(null);
+    const [editLoading, setEditLoading] = useState(false);
 
     const load = () => Promise.all([
         get("/compras").then(setCompras),
@@ -313,7 +315,9 @@ export function Compras() {
                                     ))}
                                 </td>
                                 <td style={{ padding: 12, fontWeight: "bold" }}>${parseFloat(c.total || 0).toFixed(2)}</td>
-                                <td style={{ padding: 12 }}>
+                                <td style={{ padding: 12, display: "flex", gap: 6 }}>
+                                    <button onClick={() => setEditModal({ id: c.id, proveedor: c.proveedor || "", fecha: c.fecha ? new Date(c.fecha).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10) })}
+                                        style={{ background: "none", border: "1px solid #ff9800", color: "#ff9800", borderRadius: 4, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}>Editar</button>
                                     <button onClick={() => setDeleteConfirm({ id: c.id })}
                                         style={{ background: "none", border: "1px solid #f44336", color: "#f44336", borderRadius: 4, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}>Eliminar</button>
                                 </td>
@@ -322,6 +326,40 @@ export function Compras() {
                     </tbody>
                 </table>
             </div>
+            {editModal && (
+                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }} onClick={() => setEditModal(null)}>
+                    <div style={{ background: "#fff", borderRadius: 16, padding: 32, maxWidth: 500, width: "95%" }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ marginTop: 0 }}>Editar Compra</h3>
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 4 }}>Proveedor</label>
+                            <input value={editModal.proveedor} onChange={e => setEditModal({ ...editModal, proveedor: e.target.value })}
+                                style={{ width: "100%", padding: "10px 12px", fontSize: 14, border: "1px solid #ddd", borderRadius: 8, boxSizing: "border-box" }} />
+                        </div>
+                        <div style={{ marginBottom: 24 }}>
+                            <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 4 }}>Fecha</label>
+                            <input type="date" value={editModal.fecha} onChange={e => setEditModal({ ...editModal, fecha: e.target.value })}
+                                style={{ width: "100%", padding: "10px 12px", fontSize: 14, border: "1px solid #ddd", borderRadius: 8, boxSizing: "border-box" }} />
+                        </div>
+                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                            <button disabled={editLoading} onClick={async () => {
+                                setEditLoading(true);
+                                try {
+                                    await put(`/compras/${editModal.id}`, { proveedor: editModal.proveedor || undefined, fecha: editModal.fecha });
+                                    notify("Compra actualizada", "success");
+                                    setEditModal(null);
+                                    load();
+                                } catch (e: any) { notify("Error: " + e.message, "error"); }
+                                setEditLoading(false);
+                            }} style={{ padding: "10px 24px", background: editLoading ? "#ccc" : "#ff9800", color: "#fff", border: "none", borderRadius: 8, cursor: editLoading ? "not-allowed" : "pointer", fontWeight: "bold" }}>
+                                {editLoading ? "Guardando..." : "Guardar"}
+                            </button>
+                            <button onClick={() => setEditModal(null)} style={{ padding: "10px 24px", background: "#888", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer" }}>
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <ConfirmDialog
                 open={!!deleteConfirm}
                 title="Eliminar compra"
