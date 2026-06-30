@@ -33,8 +33,7 @@ export function HomePage() {
     {
       titulo: "Recepción",
       items: [
-        { label: "Escanear QR", icon: "📷", path: "/scan", color: "#1a8a3a" },
-        { label: "Recibir tarima", icon: "📦", path: "/scan?action=receive", color: "#1976d2" },
+        { label: "Recibir tarima", icon: "📦", path: "/scan", color: "#1976d2" },
         { label: "Confirmar traspaso", icon: "🚚", path: "/scan?action=confirm", color: "#e65100" },
         { label: "Recibir traspaso", icon: "📥", path: "/scan?action=transfer-receive", color: "#9c27b0" },
       ],

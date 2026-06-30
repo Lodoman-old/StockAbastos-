@@ -41,8 +41,7 @@ export function ScanPage() {
 
   const navegar = (codigo: string) => {
     const qr = codigo.trim();
-    if (action === "receive") navigate(`/receive/${encodeURIComponent(qr)}`);
-    else if (action === "confirm") navigate(`/confirmar-traspaso/${encodeURIComponent(qr)}`);
+    if (action === "confirm") navigate(`/confirmar-traspaso/${encodeURIComponent(qr)}`);
     else if (action === "transfer-receive") navigate(`/recibir-traspaso/${encodeURIComponent(qr)}`);
     else navigate(`/receive/${encodeURIComponent(qr)}`);
   };
@@ -52,9 +51,8 @@ export function ScanPage() {
     navegar(manual.trim());
   };
 
-  const titulo = action === "receive" ? "Recibir tarima" :
-    action === "confirm" ? "Confirmar traspaso" :
-    action === "transfer-receive" ? "Recibir traspaso" : "Escanear QR";
+  const titulo = action === "confirm" ? "Confirmar traspaso" :
+    action === "transfer-receive" ? "Recibir traspaso" : "Recibir tarima";
 
   return (
     <div className="page">
