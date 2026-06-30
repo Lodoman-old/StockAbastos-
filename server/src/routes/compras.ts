@@ -80,8 +80,8 @@ export async function comprasRoutes(app: FastifyInstance) {
             const padreCodigo = `${abrev}-${hoy}-${Math.floor(Math.random() * 900) + 100}`;
 
             const padre = await client.query(`
-                INSERT INTO lotes (codigo_lote, estado, proveedor_nombre, fecha_recepcion)
-                VALUES ($1, 'PENDIENTE', $2, $3) RETURNING *
+                INSERT INTO lotes (codigo_lote, estado, proveedor_nombre, fecha_recepcion, cantidad_recibida_kg, cantidad_actual_kg)
+                VALUES ($1, 'PENDIENTE', $2, $3, 0.001, 0.001) RETURNING *
             `, [padreCodigo, proveedor || null, fecha || new Date().toISOString().substring(0, 10)]);
 
             const compra = await client.query(
@@ -107,10 +107,25 @@ export async function comprasRoutes(app: FastifyInstance) {
                 const prodData = await client.query("SELECT modalidad_unidad FROM productos WHERE id = $1", [productoId]);
                 const esUnidad = prodData.rows[0]?.modalidad_unidad === true;
 
+                let pesoTotalLote = 0;
+                for (const t of items) {
+                    if (esUnidad) {
+                        pesoTotalLote += (t.cajas_directas || t.cantidad || 1) * 1;
+                    } else if (t.compra_por_cajas) {
+                        pesoTotalLote += t.peso_kg ? Number(t.peso_kg) : 0;
+                    } else {
+                        const tp = await client.query("SELECT cantidad_cajas FROM tarimas_tipos WHERE id = $1", [t.tarima_tipo_id]);
+                        const cajasPorTarima = parseInt(tp.rows[0]?.cantidad_cajas, 10) || 1;
+                        const pesoPorTarima = t.peso_kg ? Number(t.peso_kg) : 0;
+                        const numTarimas = t.cantidad || 1;
+                        pesoTotalLote += pesoPorTarima * numTarimas;
+                    }
+                }
+
                 const lote = await client.query(`
-                    INSERT INTO lotes (producto_id, bodega_id, estado, codigo_lote, lote_padre_id, fecha_caducidad)
-                    VALUES ($1, $2, 'PENDIENTE', $3, $4, $5) RETURNING *
-                `, [productoId, bodegaId, codigoHijo, padre.rows[0].id, items[0].fecha_caducidad || null]);
+                    INSERT INTO lotes (producto_id, bodega_id, estado, codigo_lote, lote_padre_id, fecha_caducidad, cantidad_recibida_kg, cantidad_actual_kg)
+                    VALUES ($1, $2, 'PENDIENTE', $3, $4, $5, $6, $6) RETURNING *
+                `, [productoId, bodegaId, codigoHijo, padre.rows[0].id, items[0].fecha_caducidad || null, pesoTotalLote || 0.001]);
                 lotes.push(lote.rows[0]);
                 hijoIndex++;
 
