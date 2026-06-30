@@ -1,7 +1,8 @@
 import { money } from "../format";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { get, post } from "../services/api";
+import { get, getApiUrl } from "../api";
+import { post } from "../services/api";
 
 const emptyForm = { producto_id: "", tarima_tipo_id: "", cantidad: "1", peso_kg: "", bodega_id: "", fecha_caducidad: "", compra_por_cajas: false, cajas_directas: "1" };
 
@@ -21,6 +22,8 @@ export function Compras() {
     const [showProvList, setShowProvList] = useState(false);
     const [costoTotal, setCostoTotal] = useState("");
 
+    const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+    const esAdmin = usuario.rol === "admin" || usuario.rol === "supervisor";
     const producto = productos.find(p => p.id === form.producto_id);
     const esUnidad = producto?.modalidad_unidad === true;
 
@@ -220,6 +223,12 @@ export function Compras() {
                         <div key={c.id} className="card" style={{ padding: "12px 16px" }}>
                             <div style={{ fontWeight: "bold", fontSize: 15 }}>{c.proveedor || "Sin proveedor"} — ${money(c.total || 0)}</div>
                             <div style={{ fontSize: 13, color: "#888" }}>{new Date(c.fecha).toLocaleDateString()} — {c.detalles?.length || 0} producto(s)</div>
+                            {esAdmin && c.detalles?.[0]?.lote_padre_id && (
+                                <button onClick={() => window.open(`${getApiUrl()}/api/tarimas/qr-lote/${c.detalles[0].lote_padre_id}`, "_blank")}
+                                    style={{ marginTop: 8, padding: "6px 12px", background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
+                                    Imprimir QR
+                                </button>
+                            )}
                         </div>
                     ))}
                     {!compras.length && <p style={{ color: "#888", textAlign: "center" }}>Sin compras</p>}

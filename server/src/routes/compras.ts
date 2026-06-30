@@ -16,7 +16,8 @@ export async function comprasRoutes(app: FastifyInstance) {
                 json_agg(json_build_object(
                     'id', cd.id, 'producto_id', cd.producto_id, 'producto_nombre', p.nombre,
                     'lote_id', cd.lote_id, 'codigo_lote', l.codigo_lote,
-                    'precio_compra', cd.precio_compra, 'modalidad_unidad', p.modalidad_unidad
+                    'precio_compra', cd.precio_compra, 'modalidad_unidad', p.modalidad_unidad,
+                    'lote_padre_id', l.lote_padre_id
                 )) FILTER (WHERE cd.id IS NOT NULL),
                 '[]'
             ) AS detalles

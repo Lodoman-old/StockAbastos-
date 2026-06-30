@@ -61,6 +61,14 @@ export function Lotes() {
                                         </div>
                                         <span style={{ fontSize: 12, color: "#999", transition: "transform 0.2s", transform: expand ? "rotate(180deg)" : "rotate(0deg)" }}>▼</span>
                                     </div>
+                                    {esAdmin && (
+                                        <div style={{ padding: "0 14px 10px", display: "flex", gap: 8 }}>
+                                            <button onClick={(e) => { e.stopPropagation(); window.open(`${getApiUrl()}/api/tarimas/qr-lote/${g.id}`, "_blank"); }}
+                                                style={{ padding: "4px 10px", background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11 }}>
+                                                Imprimir QR
+                                            </button>
+                                        </div>
+                                    )}
                                     {expand && (
                                         <div style={{ padding: "0 14px 14px", borderTop: "1px solid #eee" }}>
                                             {g.hijos.map((h: any) => (
