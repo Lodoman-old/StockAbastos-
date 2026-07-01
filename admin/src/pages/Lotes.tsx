@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { get, put } from "../services/api";
+import { get, put, API } from "../services/api";
 import { notify } from "../components/Toast";
+
+function openQrPrint(loteId: string) {
+    const token = localStorage.getItem("token");
+    fetch(`${API}/tarimas/qr-lote/${loteId}`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    }).then(r => r.text()).then(html => {
+        const w = window.open("", "_blank");
+        if (w) { w.document.write(html); w.document.close(); }
+    }).catch(() => notify("Error al cargar QRs", "error"));
+}
 
 const estadoColor: Record<string, string> = {
     PENDIENTE: "#ff9800", RECIBIDO: "#4caf50", DISPONIBLE: "#2196f3",
@@ -77,10 +87,14 @@ export function Lotes() {
                     <div key={p.id} style={{ background: "#fff", borderRadius: 12, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 14, cursor: "pointer", borderLeft: `4px solid ${estadoColor[p.estado] || "#ccc"}` }}
                             onClick={() => setExpandidos(prev => ({ ...prev, [p.id]: !prev[p.id] }))}>
-                            <div>
+                            <div style={{ flex: 1 }}>
                                 <strong style={{ fontSize: 15 }}>{p.codigo_lote}</strong>
                                 <span style={{ marginLeft: 8, padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: "bold", background: `${estadoColor[p.estado] || "#eee"}22`, color: estadoColor[p.estado] || "#888" }}>
                                     {p.estado}
+                                </span>
+                                <span onClick={e => { e.stopPropagation(); openQrPrint(p.id); }} title="Imprimir QRs"
+                                    style={{ marginLeft: 8, cursor: "pointer", fontSize: 16, color: "#555", userSelect: "none" }}>
+                                    🖨️
                                 </span>
                                 <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
                                     {p.proveedor_nombre || "Sin proveedor"} — {p.hijos.length} hijo(s) — {p.pendientes || 0} pendiente(s) — {p.recibidas || 0} recibida(s){p.parcial ? ` — ${p.parcial} parcial(es)` : ""}
@@ -123,7 +137,11 @@ export function Lotes() {
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: "6px 8px" }}>{h.fecha_caducidad ? new Date(h.fecha_caducidad).toLocaleDateString() : "-"}</td>
-                                                <td style={{ padding: "6px 8px" }}>
+                                                <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>
+                                                    <span onClick={() => openQrPrint(h.id)} title="Imprimir QRs"
+                                                        style={{ cursor: "pointer", fontSize: 16, marginRight: 6, userSelect: "none" }}>
+                                                        🖨️
+                                                    </span>
                                                     {h.estado === "PENDIENTE" && (
                                                         <button onClick={() => setEditHijo({ id: h.id, bodega_actual: h.bodega_id, nuevaBodega: h.bodega_id, estado_actual: h.estado, codigo: h.codigo_lote })}
                                                             style={{ background: "none", border: "1px solid #ff9800", color: "#ff9800", borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontSize: 11 }}>
