@@ -62,18 +62,27 @@ export async function cascadeLoteEstado(loteId: string) {
 export async function tarimasRoutes(app: FastifyInstance) {
     app.get("/lote/:loteId", async (request) => {
         const { loteId } = request.params as any;
+        const { bodega_id } = request.query as any;
+        const params: any[] = [loteId];
+        let bodegaFilter = "";
+        if (bodega_id) {
+            bodegaFilter = "AND t.bodega_id = $2";
+            params.push(bodega_id);
+        }
         const r = await query(`
             SELECT t.*, tp.nombre AS tarima_tipo_nombre, tp.cantidad_cajas,
                    p.nombre AS producto_nombre, l.codigo_lote, l.proveedor_nombre,
-                   b_dest.nombre AS bodega_destino_nombre, b_dest.codigo AS bodega_destino_codigo
+                   b_dest.nombre AS bodega_destino_nombre, b_dest.codigo AS bodega_destino_codigo,
+                   bo.nombre AS bodega_origen_nombre, bo.codigo AS bodega_origen_codigo
             FROM tarimas t
             JOIN tarimas_tipos tp ON tp.id = t.tarima_tipo_id
             JOIN productos p ON p.id = t.producto_id
             JOIN lotes l ON l.id = t.lote_id
             LEFT JOIN bodegas b_dest ON b_dest.id = t.bodega_destino_id
-            WHERE t.lote_id = $1
+            LEFT JOIN bodegas bo ON bo.id = t.bodega_id
+            WHERE t.lote_id = $1 ${bodegaFilter}
             ORDER BY t.producto_id, t.tarima_tipo_id, t.numero_tarima
-        `, [loteId]);
+        `, params);
         return r.rows;
     });
 
@@ -380,7 +389,14 @@ export async function tarimasRoutes(app: FastifyInstance) {
         return r.rows[0];
     });
 
-    app.get("/resumen-lotes", async () => {
+    app.get("/resumen-lotes", async (request) => {
+        const { bodega_id } = request.query as any;
+        const params: any[] = [];
+        let bodegaFilter = "";
+        if (bodega_id) {
+            bodegaFilter = "AND t.bodega_id = $" + (params.length + 1);
+            params.push(bodega_id);
+        }
         const r = await query(`
             SELECT p.id AS padre_id, p.codigo_lote AS padre_codigo, p.estado AS padre_estado,
                    p.proveedor_nombre,
@@ -396,11 +412,11 @@ export async function tarimasRoutes(app: FastifyInstance) {
             JOIN lotes l ON l.lote_padre_id = p.id
             JOIN tarimas t ON t.lote_id = l.id
             LEFT JOIN productos pr ON pr.id = l.producto_id
-            WHERE p.lote_padre_id IS NULL
+            WHERE p.lote_padre_id IS NULL ${bodegaFilter}
             GROUP BY p.id, p.codigo_lote, p.estado, p.proveedor_nombre,
                      l.id, l.codigo_lote, l.producto_id, l.estado, pr.nombre
             ORDER BY p.updated_at DESC, l.codigo_lote
-        `);
+        `, params);
         const agrupados: Record<string, any> = {};
         for (const row of r.rows) {
             const key = row.padre_id;

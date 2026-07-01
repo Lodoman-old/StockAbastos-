@@ -4,28 +4,32 @@ import { notify } from "../components/Toast";
 
 export function TraspasoTarimas() {
     const [bodegas, setBodegas] = useState<any[]>([]);
+    const [bodegaOrigen, setBodegaOrigen] = useState("");
+    const [bodegaDestino, setBodegaDestino] = useState("");
     const [padres, setPadres] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [bodegaDestino, setBodegaDestino] = useState("");
     const [expandPadres, setExpandPadres] = useState<Record<string, boolean>>({});
     const [tarimasPorHijo, setTarimasPorHijo] = useState<Record<string, any[]>>({});
     const [seleccion, setSeleccion] = useState<Record<string, boolean>>({});
     const [cajasTransferir, setCajasTransferir] = useState<Record<string, number>>({});
     const [traspasando, setTraspasando] = useState(false);
 
-    const load = () => {
+    const load = (bodegaId?: string) => {
         setLoading(true);
+        setPadres([]);
+        setTarimasPorHijo({});
+        setSeleccion({});
+        setCajasTransferir({});
+        const bId = bodegaId || bodegaOrigen;
+        if (!bId) { setLoading(false); return; }
         const expandedSnapshot = { ...expandPadres };
-        Promise.all([
-            get("/tarimas/resumen-lotes"),
-            get("/bodegas"),
-        ]).then(([l, b]) => {
+        const url = `/tarimas/resumen-lotes${bId ? `?bodega_id=${bId}` : ""}`;
+        get(url).then(l => {
             setPadres(l);
-            setBodegas(b);
             for (const p of l) {
                 if (expandedSnapshot[p.padre_id]) {
                     for (const hijo of (p.hijos || [])) {
-                        get(`/tarimas/lote/${hijo.lote_id}`).then(tarimas => {
+                        get(`/tarimas/lote/${hijo.lote_id}?bodega_id=${bId}`).then(tarimas => {
                             setTarimasPorHijo(prev => ({ ...prev, [hijo.lote_id]: tarimas }));
                         }).catch(() => {});
                     }
@@ -34,7 +38,20 @@ export function TraspasoTarimas() {
         }).catch(() => {}).finally(() => setLoading(false));
     };
 
-    useEffect(() => { load(); }, []);
+    useEffect(() => {
+        get("/bodegas").then(b => setBodegas(b)).catch(() => {});
+        load();
+    }, []);
+
+    const cambiarOrigen = (id: string) => {
+        setBodegaOrigen(id);
+        setBodegaDestino("");
+        setSeleccion({});
+        setCajasTransferir({});
+        setTarimasPorHijo({});
+        setExpandPadres({});
+        load(id);
+    };
 
     const togglePadre = async (padreId: string, hijos: any[]) => {
         const expanded = !expandPadres[padreId];
@@ -43,7 +60,7 @@ export function TraspasoTarimas() {
             for (const hijo of hijos) {
                 if (!tarimasPorHijo[hijo.lote_id]) {
                     try {
-                        const tarimas = await get(`/tarimas/lote/${hijo.lote_id}`);
+                        const tarimas = await get(`/tarimas/lote/${hijo.lote_id}?bodega_id=${bodegaOrigen}`);
                         setTarimasPorHijo(prev => ({ ...prev, [hijo.lote_id]: tarimas }));
                     } catch {}
                 }
@@ -114,6 +131,7 @@ export function TraspasoTarimas() {
         const entries = Object.entries(seleccion).filter(([, v]) => v);
         if (!entries.length) { notify("Selecciona al menos una tarima", "error"); return; }
         if (!bodegaDestino) { notify("Selecciona una bodega destino", "error"); return; }
+        if (bodegaOrigen === bodegaDestino) { notify("La bodega destino no puede ser la misma que la de origen", "error"); return; }
 
         setTraspasando(true);
         let completas = 0;
@@ -167,7 +185,7 @@ export function TraspasoTarimas() {
             setSeleccion({});
             setCajasTransferir({});
             setTarimasPorHijo({});
-            load();
+            load(bodegaOrigen);
         } catch (e: any) {
             notify("Error: " + (e.message || "Error"), "error");
         }
@@ -182,37 +200,64 @@ export function TraspasoTarimas() {
         padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 14,
     };
 
-    if (loading) return <div style={{ padding: 20, color: "#888" }}>Cargando...</div>;
+    const bodegasActivas = bodegas.filter((b: any) => b.activa !== false);
 
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
                 <h1 style={{ margin: 0 }}>Traspaso de Tarimas</h1>
-                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                    <select value={bodegaDestino} onChange={e => setBodegaDestino(e.target.value)}
-                        style={{ ...inputBase, borderColor: seleccionadas && !bodegaDestino ? "#dc2626" : "#ddd" }}>
-                        <option value="">-- Selecciona bodega destino --</option>
-                        {bodegas.filter((b: any) => b.activa !== false).map((b: any) => (
+            </div>
+
+            <div style={{ ...cardStyle, marginBottom: 16, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                    <label style={{ fontSize: 12, fontWeight: "bold", color: "#555", display: "block", marginBottom: 4 }}>Bodega origen</label>
+                    <select value={bodegaOrigen} onChange={e => cambiarOrigen(e.target.value)}
+                        style={{ ...inputBase, width: "100%", borderColor: !bodegaOrigen ? "#dc2626" : "#ddd" }}>
+                        <option value="">-- Selecciona origen --</option>
+                        {bodegasActivas.map((b: any) => (
                             <option key={b.id} value={b.id}>{b.codigo} - {b.nombre}</option>
                         ))}
                     </select>
-                    {seleccionadas > 0 && !bodegaDestino && (
-                        <span style={{ color: "#dc2626", fontSize: 12, fontWeight: "bold" }}>Selecciona un destino</span>
-                    )}
+                </div>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                    <label style={{ fontSize: 12, fontWeight: "bold", color: "#555", display: "block", marginBottom: 4 }}>Bodega destino</label>
+                    <select value={bodegaDestino} onChange={e => setBodegaDestino(e.target.value)}
+                        style={{ ...inputBase, width: "100%", borderColor: seleccionadas && !bodegaDestino ? "#dc2626" : "#ddd" }}
+                        disabled={!bodegaOrigen}>
+                        <option value="">-- Selecciona destino --</option>
+                        {bodegasActivas.filter((b: any) => b.id !== bodegaOrigen).map((b: any) => (
+                            <option key={b.id} value={b.id}>{b.codigo} - {b.nombre}</option>
+                        ))}
+                    </select>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, alignSelf: "flex-end" }}>
                     <button onClick={traspasarSeleccion} disabled={traspasando || !bodegaDestino || !seleccionadas}
                         style={{ padding: "8px 16px", background: traspasando || !bodegaDestino || !seleccionadas ? "#ccc" : "#e65100", color: "#fff", border: "none", borderRadius: 8, cursor: traspasando || !bodegaDestino || !seleccionadas ? "not-allowed" : "pointer", fontSize: 14, fontWeight: "bold", whiteSpace: "nowrap" }}>
                         {traspasando ? "Asignando..." : `Asignar (${seleccionadas}) →`}
                     </button>
+                    {bodegaOrigen && bodegaDestino && (
+                        <span style={{ fontSize: 11, color: "#666" }}>
+                            {bodegasActivas.find((b: any) => b.id === bodegaOrigen)?.codigo} → {bodegasActivas.find((b: any) => b.id === bodegaDestino)?.codigo}
+                        </span>
+                    )}
                 </div>
             </div>
 
-            {padres.length === 0 && (
-                <div style={{ color: "#888", padding: 20, textAlign: "center" }}>
-                    No hay lotes con tarimas disponibles para traspasar.
+            {!bodegaOrigen && (
+                <div style={{ color: "#888", padding: 30, textAlign: "center" }}>
+                    Selecciona una bodega de origen para ver sus lotes disponibles
                 </div>
             )}
 
-            {padres.map(padre => {
+            {loading && <div style={{ padding: 20, color: "#888" }}>Cargando...</div>}
+
+            {bodegaOrigen && !loading && padres.length === 0 && (
+                <div style={{ color: "#888", padding: 20, textAlign: "center" }}>
+                    No hay lotes con tarimas disponibles en esta bodega.
+                </div>
+            )}
+
+            {bodegaOrigen && !loading && padres.map(padre => {
                 const expandP = expandPadres[padre.padre_id];
                 const hijosRecibidas = padre.hijos.map((h: any) => Number(h.recibidas));
                 const totalRecibidas = hijosRecibidas.reduce((s: number, v: number) => s + v, 0);
@@ -249,7 +294,7 @@ export function TraspasoTarimas() {
                                     <div style={{ marginBottom: 8 }}>
                                         <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13 }}>
                                             <input type="checkbox" onChange={seleccionarTodas}
-                                                checked={false /* indeterminate state is complex, skip */} />
+                                                checked={false} />
                                             <strong>Seleccionar todas las RECIBIDA de esta compra</strong>
                                         </label>
                                     </div>
