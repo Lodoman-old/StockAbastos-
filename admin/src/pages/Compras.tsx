@@ -91,6 +91,7 @@ export function Compras() {
                     tarima_tipo_id: i.tarima_tipo_id || undefined,
                     cantidad: parseInt(i.cantidad),
                     peso_kg: i.peso_kg ? parseFloat(i.peso_kg) : undefined,
+                    costo_por_kg: i.costo_por_kg ? parseFloat(i.costo_por_kg) : undefined,
                     bodega_id: i.bodega_id,
                     fecha_caducidad: i.fecha_caducidad || undefined,
                     compra_por_cajas: i.compra_por_cajas || false,

@@ -67,6 +67,7 @@ export async function comprasRoutes(app: FastifyInstance) {
             tarima_tipo_id?: string;
             cantidad: number;
             peso_kg?: number;
+            costo_por_kg?: number;
             compra_por_cajas?: boolean;
             cajas_directas?: number;
             fecha_caducidad?: string;
@@ -161,7 +162,7 @@ export async function comprasRoutes(app: FastifyInstance) {
 
                     const det = await client.query(
                         "INSERT INTO compra_detalles (compra_id, producto_id, lote_id, precio_compra) VALUES ($1, $2, $3, $4) RETURNING id",
-                        [compraId, t.producto_id, lote.rows[0].id, null]
+                        [compraId, t.producto_id, lote.rows[0].id, t.costo_por_kg || null]
                     );
                 }
             }
