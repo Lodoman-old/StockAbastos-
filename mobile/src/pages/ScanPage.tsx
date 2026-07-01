@@ -53,21 +53,22 @@ export function ScanPage() {
     const qr = codigo.trim();
     if (!qr) return;
     try {
-      if (action === "confirm") {
-        await post(`/tarimas/confirmar-traspaso/${encodeURIComponent(qr)}`);
-        notify("Traspaso confirmado", "success");
-      } else if (action === "transfer-receive") {
-        await post(`/tarimas/entregar/${encodeURIComponent(qr)}`);
-        notify("Traspaso recibido en destino", "success");
-      } else {
-        let body: any = {};
+      const endpoint = action === "confirm" ? "confirmar-traspaso" :
+        action === "transfer-receive" ? "entregar" : "recibir";
+      const msgs: Record<string, string> = {
+        confirm: "Traspaso confirmado",
+        "transfer-receive": "Traspaso recibido en destino",
+        scan: "Tarima recibida",
+      };
+      let body: any = {};
+      if (action === "scan") {
         try {
           const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
           if (usuario.bodega_id) body.bodega_id = usuario.bodega_id;
         } catch {}
-        await post(`/tarimas/recibir/${encodeURIComponent(qr)}`, body);
-        notify("Tarima recibida", "success");
       }
+      await post(`/tarimas/${endpoint}/${encodeURIComponent(qr)}`, body);
+      notify(msgs[action] || "OK", "success");
     } catch (e: any) {
       notify("Error: " + (e.message || "Desconocido"), "error");
       lastQrRef.current = "";
