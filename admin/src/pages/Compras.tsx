@@ -343,10 +343,11 @@ export function Compras() {
                         </div>
                         {editModal.detalles.length > 0 && (
                             <div style={{ marginBottom: 16 }}>
-                                <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 8, fontWeight: "bold" }}>Precio por kg / unidad</label>
+                                <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 8, fontWeight: "bold" }}>Costos por producto</label>
                                 {editModal.detalles.map((d, i) => (
                                     <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                                         <span style={{ fontSize: 13, flex: 1 }}>{d.producto_nombre}</span>
+                                        <span style={{ fontSize: 12, color: "#555", whiteSpace: "nowrap" }}>{d.modalidad_unidad ? "Costo por unidad:" : "Costo por kg:"}</span>
                                         <input type="number" step="0.01" value={d.precio_compra || ""}
                                             onChange={e => {
                                                 const nuevos = [...editModal.detalles];
@@ -354,8 +355,8 @@ export function Compras() {
                                                 setEditModal({ ...editModal, detalles: nuevos });
                                             }}
                                             placeholder="0.00"
-                                            style={{ width: 120, padding: "6px 10px", fontSize: 13, border: "1px solid #ddd", borderRadius: 6, boxSizing: "border-box", textAlign: "right" }} />
-                                        <span style={{ fontSize: 12, color: "#888", width: 40 }}>{d.modalidad_unidad ? "/unid" : "/kg"}</span>
+                                            style={{ width: 100, padding: "6px 10px", fontSize: 13, border: "1px solid #ddd", borderRadius: 6, boxSizing: "border-box", textAlign: "right" }} />
+                                        <span style={{ fontSize: 12, color: "#888", width: 30 }}>{d.modalidad_unidad ? "$/unid" : "$/kg"}</span>
                                     </div>
                                 ))}
                             </div>

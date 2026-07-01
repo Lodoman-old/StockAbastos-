@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { get, getApiUrl } from "../api";
 import { post } from "../services/api";
 
-const emptyForm = { producto_id: "", tarima_tipo_id: "", cantidad: "1", peso_kg: "", bodega_id: "", fecha_caducidad: "", compra_por_cajas: false, cajas_directas: "1" };
+const emptyForm = { producto_id: "", tarima_tipo_id: "", cantidad: "1", peso_kg: "", costo_por_kg: "", bodega_id: "", fecha_caducidad: "", compra_por_cajas: false, cajas_directas: "1" };
 
 export function Compras() {
     const navigate = useNavigate();
@@ -53,6 +53,7 @@ export function Compras() {
             tarima_tipo_nombre: form.compra_por_cajas ? "Cajas directas" : (tp?.nombre || ""),
             cantidad: form.compra_por_cajas ? "1" : (form.cantidad || "1"),
             peso_kg: form.peso_kg,
+            costo_por_kg: form.costo_por_kg,
             bodega_id: form.bodega_id,
             bodega_nombre: b?.nombre || "",
             fecha_caducidad: form.fecha_caducidad,
@@ -77,6 +78,7 @@ export function Compras() {
                     tarima_tipo_id: i.tarima_tipo_id || undefined,
                     cantidad: parseInt(i.cantidad),
                     peso_kg: i.peso_kg ? parseFloat(i.peso_kg) : undefined,
+                    costo_por_kg: i.costo_por_kg ? parseFloat(i.costo_por_kg) : undefined,
                     bodega_id: i.bodega_id,
                     fecha_caducidad: i.fecha_caducidad || undefined,
                     compra_por_cajas: i.compra_por_cajas || false,
@@ -164,6 +166,9 @@ export function Compras() {
                                         <div className="input-group"><label>Peso x tarima (kg)</label>
                                             <input className="input" type="number" step="0.1" value={form.peso_kg} onChange={e => setForm({ ...form, peso_kg: e.target.value })} />
                                         </div>
+                                        <div className="input-group"><label>{esUnidad ? "Costo por unidad ($)" : "Costo por kg ($)"}</label>
+                                            <input className="input" type="number" step="0.01" value={form.costo_por_kg} onChange={e => setForm({ ...form, costo_por_kg: e.target.value })} />
+                                        </div>
                                     </>
                                 ) : (
                                     <>
@@ -172,6 +177,9 @@ export function Compras() {
                                         </div>
                                         <div className="input-group"><label>Peso total (kg)</label>
                                             <input className="input" type="number" step="0.1" value={form.peso_kg} onChange={e => setForm({ ...form, peso_kg: e.target.value })} />
+                                        </div>
+                                        <div className="input-group"><label>{esUnidad ? "Costo por unidad ($)" : "Costo por caja ($)"}</label>
+                                            <input className="input" type="number" step="0.01" value={form.costo_por_kg} onChange={e => setForm({ ...form, costo_por_kg: e.target.value })} />
                                         </div>
                                     </>
                                 )}
@@ -197,8 +205,8 @@ export function Compras() {
                                     <div>
                                         <strong>{item.producto_nombre}</strong> – {item.es_unidad ? `${item.cajas_directas || item.cantidad} pz` : `${item.tarima_tipo_nombre}${item.compra_por_cajas ? ` (${item.cajas_directas} cajas)` : ` x${item.cantidad}`}`}
                                         <div style={{ fontSize: 11, color: "#888" }}>
-                                            {item.peso_kg && !item.es_unidad ? `${item.peso_kg} kg` : ""}
-                                            {item.bodega_nombre && `${item.peso_kg && !item.es_unidad ? " | " : ""}${item.bodega_nombre}`}
+                                            {item.costo_por_kg && `$${parseFloat(item.costo_por_kg).toFixed(2)}${item.es_unidad ? '/unidad' : '/kg'}`}{item.costo_por_kg && item.peso_kg && !item.es_unidad ? " | " : ""}{item.peso_kg && !item.es_unidad ? `${item.peso_kg} kg` : ""}
+                                            {item.bodega_nombre && `${item.costo_por_kg || item.peso_kg && !item.es_unidad ? " | " : ""}${item.bodega_nombre}`}
                                             {item.fecha_caducidad && ` | Cad: ${new Date(item.fecha_caducidad).toLocaleDateString()}`}
                                         </div>
                                     </div>
