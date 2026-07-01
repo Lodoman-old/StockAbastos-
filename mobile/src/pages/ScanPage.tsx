@@ -60,7 +60,12 @@ export function ScanPage() {
         await post(`/tarimas/entregar/${encodeURIComponent(qr)}`);
         notify("Traspaso recibido en destino", "success");
       } else {
-        await post(`/tarimas/recibir/${encodeURIComponent(qr)}`, {});
+        let body: any = {};
+        try {
+          const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+          if (usuario.bodega_id) body.bodega_id = usuario.bodega_id;
+        } catch {}
+        await post(`/tarimas/recibir/${encodeURIComponent(qr)}`, body);
         notify("Tarima recibida", "success");
       }
     } catch (e: any) {
