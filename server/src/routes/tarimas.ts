@@ -141,7 +141,11 @@ export async function tarimasRoutes(app: FastifyInstance) {
         const t = tarima.rows[0];
         if (!bodega_id) bodega_id = t.bodega_id;
         if (!bodega_id) bodega_id = user?.bodega_id;
-        if (!bodega_id) return reply.status(400).send({ error: "Tarima sin bodega asignada. Especifique bodega_id o asigne una bodega primero." });
+        if (!bodega_id) {
+            const bd = await query("SELECT id FROM bodegas ORDER BY nombre LIMIT 1");
+            if (bd.rows.length) bodega_id = bd.rows[0].id;
+        }
+        if (!bodega_id) return reply.status(400).send({ error: "No hay bodegas configuradas en el sistema" });
 
         const cajasOrig = t.cajas_originales != null ? Number(t.cajas_originales) : 1;
         const pesoKg = t.peso_kg != null ? Number(t.peso_kg) : null;
