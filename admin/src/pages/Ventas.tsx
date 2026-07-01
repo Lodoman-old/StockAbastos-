@@ -9,6 +9,7 @@ export function Ventas() {
     const [cajaAbierta, setCajaAbierta] = useState<boolean | null>(null);
     const [montoApertura, setMontoApertura] = useState("0");
     const [showCobros, setShowCobros] = useState(false);
+    const [ticketHtml, setTicketHtml] = useState<string | null>(null);
 
     const loadVentas = () => { get("/ventas").then(setVentas).catch(() => {}); get("/ventas/totales").then(setTotales).catch(() => {}); };
     useEffect(() => { loadVentas(); get("/cortes/esta-abierto").then(r => setCajaAbierta(r.abierto)).catch(() => setCajaAbierta(true)); }, []);
@@ -100,7 +101,7 @@ export function Ventas() {
                                 </td>
                                 <td style={{ padding: 12, whiteSpace: "nowrap" }}>{new Date(v.created_at).toLocaleString()}</td>
                                 <td style={{ padding: 12 }}>
-                                    <button onClick={(e) => { e.stopPropagation(); window.open(`/api/ticket/${v.id}?token=${localStorage.getItem("token")}`, "_blank"); }}
+                                    <button onClick={async (e) => { e.stopPropagation(); const res = await fetch(`/api/ticket/${v.id}?token=${localStorage.getItem("token")}`); setTicketHtml(await res.text()); }}
                                         style={{ background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 11, fontWeight: "bold" }}>Ticket</button>
                                 </td>
                             </tr>
@@ -109,6 +110,28 @@ export function Ventas() {
                     </tbody>
                 </table>
             </div>
+
+            {ticketHtml && (
+                <div style={{ position: "fixed", inset: 0, background: "#fff", zIndex: 2000, display: "flex", flexDirection: "column" }}>
+                    <div style={{ padding: "8px 16px", background: "#1a8a3a", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontWeight: "bold" }}>Ticket de venta</span>
+                        <button onClick={() => setTicketHtml(null)}
+                            style={{ background: "none", border: "none", color: "#fff", fontSize: 20, cursor: "pointer" }}>✕</button>
+                    </div>
+                    <div style={{ flex: 1, overflow: "auto", padding: 8 }}
+                        dangerouslySetInnerHTML={{ __html: ticketHtml }} />
+                    <div style={{ padding: "8px 16px", borderTop: "1px solid #ddd", display: "flex", gap: 8 }}>
+                        <button onClick={() => window.print()}
+                            style={{ flex: 1, padding: 12, background: "#1a8a3a", color: "#fff", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" }}>
+                            Imprimir
+                        </button>
+                        <button onClick={() => setTicketHtml(null)}
+                            style={{ flex: 1, padding: 12, background: "#888", color: "#fff", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" }}>
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -302,7 +325,9 @@ function POSFormMayoreo({ onClose, onDone }: { onClose: () => void; onDone: () =
                 })),
             });
             setMsg(`Venta ${venta.folio} registrada`);
-            setTimeout(() => { window.open(`/api/ticket/${venta.id}?token=${localStorage.getItem("token")}`, "_blank"); onDone(); }, 1000);
+            const resTicket = await fetch(`/api/ticket/${venta.id}?token=${localStorage.getItem("token")}`);
+            setTicketHtml(await resTicket.text());
+            onDone();
         } catch (e: any) { setMsg("Error: " + (e.message || "")); }
     };
 
