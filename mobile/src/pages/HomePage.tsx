@@ -57,6 +57,7 @@ export function HomePage() {
         { label: "Proveedores", icon: "🏭", path: "/proveedores", color: "#555" },
         { label: "Lotes", icon: "🏷️", path: "/lotes", color: "#00796b", permiso: "ver_lotes" },
         { label: "Traspasos", icon: "🚚", path: "/traspasos", color: "#e65100", permiso: "ver_traspasos" },
+        { label: "Admin Traspaso", icon: "📋", path: "/admin-traspaso", color: "#e65100", permiso: "admin" },
         { label: "Corte de caja", icon: "💰", path: "/corte-caja", color: "#2e7d32" },
         { label: "Precios del día", icon: "💲", path: "/precios-diarios", color: "#1565c0" },
         { label: "Préstamo cajas", icon: "📦", path: "/prestamo-cajas", color: "#6a1b9a", permiso: "ver_prestamo_cajas" },

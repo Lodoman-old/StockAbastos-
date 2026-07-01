@@ -18,6 +18,7 @@ import { Clientes } from "./pages/Clientes";
 import { Lotes } from "./pages/Lotes";
 import { Traspasos } from "./pages/Traspasos";
 import { CorteDeCaja } from "./pages/CorteDeCaja";
+import { AdminTraspaso } from "./pages/AdminTraspaso";
 import { PreciosDelDia } from "./pages/PreciosDelDia";
 import { PrestamoCajas } from "./pages/PrestamoCajas";
 import { Reportes } from "./pages/Reportes";
@@ -130,6 +131,7 @@ export function App() {
           <Route path="/receive/:codigoQr" element={<ProtectedRoute><ReceivePage /></ProtectedRoute>} />
           <Route path="/confirmar-traspaso/:codigoQr" element={<ProtectedRoute><ConfirmTransferPage /></ProtectedRoute>} />
           <Route path="/recibir-traspaso/:codigoQr" element={<ProtectedRoute><TransferReceivePage /></ProtectedRoute>} />
+          <Route path="/admin-traspaso" element={<ProtectedRoute><AdminTraspaso /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
