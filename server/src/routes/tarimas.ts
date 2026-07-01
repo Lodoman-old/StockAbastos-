@@ -133,12 +133,14 @@ export async function tarimasRoutes(app: FastifyInstance) {
     app.post<{ Params: { codigoQr: string }; Body: { bodega_id?: string } }>("/recibir/:codigoQr", async (request, reply) => {
         const { codigoQr } = request.params;
         let { bodega_id } = request.body;
+        const user = request.user as any;
 
         const tarima = await query("SELECT * FROM tarimas WHERE codigo_qr = $1 AND estado = 'PENDIENTE'", [codigoQr]);
         if (!tarima.rows.length) return reply.status(404).send({ error: "Tarima no encontrada o ya recibida" });
 
         const t = tarima.rows[0];
         if (!bodega_id) bodega_id = t.bodega_id;
+        if (!bodega_id) bodega_id = user?.bodega_id;
         if (!bodega_id) return reply.status(400).send({ error: "Tarima sin bodega asignada. Especifique bodega_id o asigne una bodega primero." });
 
         const cajasOrig = t.cajas_originales != null ? Number(t.cajas_originales) : 1;
