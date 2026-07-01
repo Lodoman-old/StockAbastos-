@@ -319,6 +319,15 @@ export function Ventas() {
                             {v.total_kg ? `${parseFloat(v.total_kg).toFixed(1)} kg` : "0 kg"}
                             {v.total_cajas ? ` · ${v.total_cajas} cajas` : ""}
                         </p>
+                        <button onClick={async () => {
+                            const token = localStorage.getItem("token");
+                            const res = await fetch(`${getApiBase()}/ticket/${v.id}?token=${token}`);
+                            const html = await res.text();
+                            setTicketHtml(html);
+                        }}
+                            style={{ marginTop: 8, padding: "6px 14px", background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: "bold" }}>
+                            Ticket
+                        </button>
                     </div>
                 ))}
             </div>
