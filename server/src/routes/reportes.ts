@@ -16,26 +16,37 @@ export async function reportesRoutes(app: FastifyInstance) {
                 vd.id AS detalle_id, vd.cantidad_kg, vd.cantidad_unidades, vd.cantidad_cajas,
                 vd.precio_unitario, vd.subtotal AS subtotal_venta,
                 p.nombre AS producto, p.modalidad_unidad,
-                cd.precio_compra AS precio_compra,
-                l.codigo_lote, l.bodega_id, b.nombre AS bodega
+                l.codigo_lote, l.bodega_id, b.nombre AS bodega,
+                c2.id AS compra_id, c2.total AS compra_total
             FROM venta_detalles vd
             JOIN ventas v ON v.id = vd.venta_id
             JOIN productos p ON p.id = vd.producto_id
             JOIN lotes l ON l.id = vd.lote_id
             JOIN bodegas b ON b.id = l.bodega_id
             LEFT JOIN compra_detalles cd ON cd.lote_id = l.id
+            LEFT JOIN compras c2 ON c2.id = cd.compra_id
             ${where}
             ORDER BY v.created_at DESC
         `, params);
-        return r.rows.map((row: any) => {
-            let costoTotal = 0;
-            const pc = parseFloat(row.precio_compra || 0);
-            if (row.modalidad_unidad) {
-                costoTotal = (row.cantidad_unidades || 0) * pc;
-            } else {
-                costoTotal = parseFloat(row.cantidad_kg || 0) * pc;
-            }
+        const detalles = r.rows;
+
+        const ventasPorCompra: Record<string, number> = {};
+        const compraTotales: Record<string, number> = {};
+        for (const d of detalles) {
+            if (!d.compra_id && !d.compra_total) continue;
+            const key = d.compra_id || "sin_compra";
+            compraTotales[key] = parseFloat(d.compra_total || 0);
+            ventasPorCompra[key] = (ventasPorCompra[key] || 0) + parseFloat(d.subtotal_venta || 0);
+        }
+
+        return detalles.map((row: any) => {
             const subtotalVenta = parseFloat(row.subtotal_venta || 0);
+            const key = row.compra_id || "sin_compra";
+            const totalCompra = compraTotales[key] || 0;
+            const totalVentasCompra = ventasPorCompra[key] || 0;
+            const costoTotal = totalCompra > 0 && totalVentasCompra > 0
+                ? (subtotalVenta / totalVentasCompra) * totalCompra
+                : 0;
             return { ...row, costo_total: costoTotal, ganancia: subtotalVenta - costoTotal };
         });
     });
