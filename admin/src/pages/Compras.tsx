@@ -28,14 +28,6 @@ export function Compras() {
     const [editLoading, setEditLoading] = useState(false);
     const [costoTotal, setCostoTotal] = useState("");
 
-    const totalCalculado = tarimaItems.reduce((sum, item) => {
-        const p = parseFloat(item.costo_por_kg || "0");
-        if (!p) return sum;
-        if (item.es_unidad) return sum + p * parseInt(item.cajas_directas || item.cantidad);
-        if (item.compra_por_cajas) return sum + p * parseFloat(item.peso_kg || "0");
-        return sum + p * parseFloat(item.peso_kg || "0") * parseInt(item.cantidad);
-    }, 0);
-
     const load = () => Promise.all([
         get("/compras").then(setCompras),
         get("/productos").then(setProductos),
@@ -93,7 +85,7 @@ export function Compras() {
             const res = await post("/compras", {
                 proveedor: proveedor || undefined,
                 fecha,
-                costo_total: costoTotal ? parseFloat(costoTotal) : (totalCalculado > 0 ? totalCalculado : undefined),
+                costo_total: costoTotal ? parseFloat(costoTotal) : undefined,
                 tarimas: tarimaItems.map(i => ({
                     producto_id: i.producto_id,
                     tarima_tipo_id: i.tarima_tipo_id || undefined,
@@ -264,21 +256,8 @@ export function Compras() {
                                                     <strong>{item.producto_nombre}</strong> – {item.es_unidad ? `${item.cajas_directas || item.cantidad} pz` : `${item.tarima_tipo_nombre}${item.compra_por_cajas ? ` (${item.cajas_directas} cajas)` : ` x${item.cantidad}`}`}
                                                     <div style={{ fontSize: 11, color: "#888" }}>
                                                         {item.costo_por_kg && `$${parseFloat(item.costo_por_kg).toFixed(2)}${item.es_unidad ? '/unidad' : '/kg'}`}{item.costo_por_kg && item.peso_kg && !item.es_unidad ? " | " : ""}{item.peso_kg && !item.es_unidad && `${item.peso_kg} kg`}
-                                                        {item.bodega_nombre && ` | ${item.bodega_nombre}`}
+                                                        {item.bodega_nombre && `${item.costo_por_kg || item.peso_kg && !item.es_unidad ? " | " : ""}${item.bodega_nombre}`}
                                                         {item.fecha_caducidad && ` | Cad: ${new Date(item.fecha_caducidad).toLocaleDateString()}`}
-                                                        {(item => {
-                                                            const p = parseFloat(item.costo_por_kg || "0");
-                                                            if (!p) return null;
-                                                            let total = 0;
-                                                            if (item.es_unidad) {
-                                                                total = p * parseInt(item.cajas_directas || item.cantidad);
-                                                            } else if (item.compra_por_cajas) {
-                                                                total = p * parseFloat(item.peso_kg || "0");
-                                                            } else {
-                                                                total = p * parseFloat(item.peso_kg || "0") * parseInt(item.cantidad);
-                                                            }
-                                                            return <span style={{ fontWeight: "bold", color: "#1a8a3a" }}> | Total: ${total.toFixed(2)}</span>;
-                                                        })(item)}
                                                     </div>
                                                 </div>
                                                 <button onClick={() => quitarTarima(i)} style={{ background: "none", border: "1px solid #f44336", color: "#f44336", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 11, whiteSpace: "nowrap", marginLeft: 8 }}>
@@ -294,18 +273,9 @@ export function Compras() {
                         <hr style={{ margin: "12px 0", border: "none", borderTop: "1px solid #eee" }} />
                         <div style={{ marginBottom: 12 }}>
                             <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 4 }}>Costo total de la compra ($)</label>
-                            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                <input type="number" step="0.01" value={costoTotal} onChange={e => setCostoTotal(e.target.value)}
-                                    placeholder={totalCalculado > 0 ? totalCalculado.toFixed(2) : "Ej: 1500.00"}
-                                    style={{ flex: 1, padding: "10px 12px", fontSize: 14, border: "1px solid #ddd", borderRadius: 8, boxSizing: "border-box" }} />
-                                {totalCalculado > 0 && (
-                                    <span style={{ fontSize: 12, color: "#888", whiteSpace: "nowrap" }}>
-                                        {costoTotal && parseFloat(costoTotal) !== totalCalculado
-                                            ? `Calculado: $${totalCalculado.toFixed(2)}`
-                                            : `$${totalCalculado.toFixed(2)}`}
-                                    </span>
-                                )}
-                            </div>
+                            <input type="number" step="0.01" value={costoTotal} onChange={e => setCostoTotal(e.target.value)}
+                                placeholder="Ej: 1500.00"
+                                style={{ width: "100%", padding: "10px 12px", fontSize: 14, border: "1px solid #ddd", borderRadius: 8, boxSizing: "border-box" }} />
                         </div>
                         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                             <button onClick={save} disabled={!tarimaItems.length} style={{ padding: "10px 24px", background: tarimaItems.length ? "#1a8a3a" : "#ccc", color: "#fff", border: "none", borderRadius: 8, cursor: tarimaItems.length ? "pointer" : "not-allowed", fontWeight: "bold" }}>
