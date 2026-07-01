@@ -101,7 +101,7 @@ export function Ventas() {
                                 </td>
                                 <td style={{ padding: 12, whiteSpace: "nowrap" }}>{new Date(v.created_at).toLocaleString()}</td>
                                 <td style={{ padding: 12 }}>
-                                    <button onClick={async (e) => { e.stopPropagation(); const res = await fetch(`/api/ticket/${v.id}?token=${localStorage.getItem("token")}`); setTicketHtml(await res.text()); }}
+                                    <button onClick={async (e) => { e.stopPropagation(); const res = await fetch(`${API}/ticket/${v.id}?token=${localStorage.getItem("token")}`); setTicketHtml(await res.text()); }}
                                         style={{ background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: 11, fontWeight: "bold" }}>Ticket</button>
                                 </td>
                             </tr>
@@ -325,7 +325,7 @@ function POSFormMayoreo({ onClose, onDone, onTicket }: { onClose: () => void; on
                 })),
             });
             setMsg(`Venta ${venta.folio} registrada`);
-            const resTicket = await fetch(`/api/ticket/${venta.id}?token=${localStorage.getItem("token")}`);
+            const resTicket = await fetch(`${API}/ticket/${venta.id}?token=${localStorage.getItem("token")}`);
             onTicket(await resTicket.text());
             onDone();
         } catch (e: any) { setMsg("Error: " + (e.message || "")); }
