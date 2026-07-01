@@ -73,7 +73,7 @@ export function Ventas() {
                 </div>
             )}
 
-            {showPOS && <POSFormMayoreo onClose={() => setShowPOS(false)} onDone={() => { setShowPOS(false); loadVentas(); }} />}
+            {showPOS && <POSFormMayoreo onClose={() => setShowPOS(false)} onDone={() => { setShowPOS(false); loadVentas(); }} onTicket={setTicketHtml} />}
 
             {showCobros && <CobrosModal onClose={() => setShowCobros(false)} onDone={() => loadVentas()} />}
 
@@ -136,7 +136,7 @@ export function Ventas() {
     );
 }
 
-function POSFormMayoreo({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+function POSFormMayoreo({ onClose, onDone, onTicket }: { onClose: () => void; onDone: () => void; onTicket: (html: string) => void }) {
     const [bodegas, setBodegas] = useState<any[]>([]);
     const [bodegaId, setBodegaId] = useState("");
     const [productos, setProductos] = useState<any[]>([]);
@@ -326,7 +326,7 @@ function POSFormMayoreo({ onClose, onDone }: { onClose: () => void; onDone: () =
             });
             setMsg(`Venta ${venta.folio} registrada`);
             const resTicket = await fetch(`/api/ticket/${venta.id}?token=${localStorage.getItem("token")}`);
-            setTicketHtml(await resTicket.text());
+            onTicket(await resTicket.text());
             onDone();
         } catch (e: any) { setMsg("Error: " + (e.message || "")); }
     };
