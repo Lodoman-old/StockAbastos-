@@ -180,10 +180,10 @@ export async function comprasRoutes(app: FastifyInstance) {
         });
     });
 
-    app.put<{ Params: { id: string }; Body: { proveedor?: string; fecha?: string; costo_total?: number } }>("/:id", async (request, reply) => {
+    app.put<{ Params: { id: string }; Body: { proveedor?: string; fecha?: string; costo_total?: number; detalles?: Array<{ detalle_id: string; precio_compra: number | null }> } }>("/:id", async (request, reply) => {
         const { id } = request.params;
-        const { proveedor, fecha, costo_total } = request.body;
-        if (!proveedor && !fecha && costo_total === undefined) return reply.status(400).send({ error: "Nada que actualizar" });
+        const { proveedor, fecha, costo_total, detalles: detallesBody } = request.body;
+        if (!proveedor && !fecha && costo_total === undefined && !detallesBody?.length) return reply.status(400).send({ error: "Nada que actualizar" });
         return transaction(async (client) => {
             const c = await client.query("SELECT * FROM compras WHERE id = $1", [id]);
             if (!c.rows.length) return reply.status(404).send({ error: "Compra no encontrada" });
@@ -223,6 +223,12 @@ export async function comprasRoutes(app: FastifyInstance) {
             if (loteUpdates.length) {
                 for (const pid of padreIds) {
                     await client.query(`UPDATE lotes SET ${loteUpdates.join(", ")} WHERE id = $${loteParams.length + 1}`, [...loteParams, pid]);
+                }
+            }
+
+            if (detallesBody?.length) {
+                for (const d of detallesBody) {
+                    await client.query("UPDATE compra_detalles SET precio_compra = $1 WHERE id = $2", [d.precio_compra, d.detalle_id]);
                 }
             }
 

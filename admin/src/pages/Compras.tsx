@@ -24,7 +24,7 @@ export function Compras() {
     const [showProvList, setShowProvList] = useState(false);
     const provRef = useRef<HTMLDivElement>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<{ id: string } | null>(null);
-    const [editModal, setEditModal] = useState<{ id: string; proveedor: string; fecha: string; costo_total: string } | null>(null);
+    const [editModal, setEditModal] = useState<{ id: string; proveedor: string; fecha: string; costo_total: string; detalles: any[] } | null>(null);
     const [editLoading, setEditLoading] = useState(false);
     const [costoTotal, setCostoTotal] = useState("");
 
@@ -317,7 +317,7 @@ export function Compras() {
                                 </td>
                                 <td style={{ padding: 12, fontWeight: "bold" }}>${money(c.total || 0)}</td>
                                 <td style={{ padding: 12, display: "flex", gap: 6 }}>
-                                    <button onClick={() => setEditModal({ id: c.id, proveedor: c.proveedor || "", fecha: c.fecha ? new Date(c.fecha).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10), costo_total: c.total ? parseFloat(c.total).toFixed(2) : "" })}
+                                    <button onClick={() => setEditModal({ id: c.id, proveedor: c.proveedor || "", fecha: c.fecha ? new Date(c.fecha).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10), costo_total: c.total ? parseFloat(c.total).toFixed(2) : "", detalles: c.detalles?.map((d: any) => ({ ...d })) || [] })}
                                         style={{ background: "none", border: "1px solid #ff9800", color: "#ff9800", borderRadius: 4, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}>Editar</button>
                                     <button onClick={() => setDeleteConfirm({ id: c.id })}
                                         style={{ background: "none", border: "1px solid #f44336", color: "#f44336", borderRadius: 4, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}>Eliminar</button>
@@ -329,7 +329,7 @@ export function Compras() {
             </div>
             {editModal && (
                 <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }} onClick={() => setEditModal(null)}>
-                    <div style={{ background: "#fff", borderRadius: 16, padding: 32, maxWidth: 500, width: "95%" }} onClick={e => e.stopPropagation()}>
+                    <div style={{ background: "#fff", borderRadius: 16, padding: 32, maxWidth: 600, width: "95%", maxHeight: "90vh", overflow: "auto" }} onClick={e => e.stopPropagation()}>
                         <h3 style={{ marginTop: 0 }}>Editar Compra</h3>
                         <div style={{ marginBottom: 16 }}>
                             <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 4 }}>Proveedor</label>
@@ -341,6 +341,25 @@ export function Compras() {
                             <input type="date" value={editModal.fecha} onChange={e => setEditModal({ ...editModal, fecha: e.target.value })}
                                 style={{ width: "100%", padding: "10px 12px", fontSize: 14, border: "1px solid #ddd", borderRadius: 8, boxSizing: "border-box" }} />
                         </div>
+                        {editModal.detalles.length > 0 && (
+                            <div style={{ marginBottom: 16 }}>
+                                <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 8, fontWeight: "bold" }}>Precio por kg / unidad</label>
+                                {editModal.detalles.map((d, i) => (
+                                    <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                        <span style={{ fontSize: 13, flex: 1 }}>{d.producto_nombre}</span>
+                                        <input type="number" step="0.01" value={d.precio_compra || ""}
+                                            onChange={e => {
+                                                const nuevos = [...editModal.detalles];
+                                                nuevos[i] = { ...nuevos[i], precio_compra: e.target.value ? parseFloat(e.target.value) : null };
+                                                setEditModal({ ...editModal, detalles: nuevos });
+                                            }}
+                                            placeholder="0.00"
+                                            style={{ width: 120, padding: "6px 10px", fontSize: 13, border: "1px solid #ddd", borderRadius: 6, boxSizing: "border-box", textAlign: "right" }} />
+                                        <span style={{ fontSize: 12, color: "#888", width: 40 }}>{d.modalidad_unidad ? "/unid" : "/kg"}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <div style={{ marginBottom: 24 }}>
                             <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 4 }}>Costo total ($)</label>
                             <input type="number" step="0.01" value={editModal.costo_total} onChange={e => setEditModal({ ...editModal, costo_total: e.target.value })}
@@ -350,7 +369,12 @@ export function Compras() {
                             <button disabled={editLoading} onClick={async () => {
                                 setEditLoading(true);
                                 try {
-                                    await put(`/compras/${editModal.id}`, { proveedor: editModal.proveedor || undefined, fecha: editModal.fecha, costo_total: editModal.costo_total ? parseFloat(editModal.costo_total) : undefined });
+                                    await put(`/compras/${editModal.id}`, {
+                                        proveedor: editModal.proveedor || undefined,
+                                        fecha: editModal.fecha,
+                                        costo_total: editModal.costo_total ? parseFloat(editModal.costo_total) : undefined,
+                                        detalles: editModal.detalles.map(d => ({ detalle_id: d.id, precio_compra: d.precio_compra })),
+                                    });
                                     notify("Compra actualizada", "success");
                                     setEditModal(null);
                                     load();
