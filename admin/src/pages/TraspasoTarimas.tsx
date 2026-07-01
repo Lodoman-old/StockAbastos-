@@ -62,7 +62,7 @@ export function TraspasoTarimas() {
 
     const seleccionarHijo = (loteId: string) => {
         const tarimas = tarimasPorHijo[loteId] || [];
-        const disponibles = tarimas.filter(t => (t.estado === "RECIBIDA" || t.estado === "PARCIAL") && !t.bodega_destino_id);
+        const disponibles = tarimas.filter(t => t.estado === "RECIBIDA" && !t.bodega_destino_id);
         const todasSel = disponibles.length > 0 && disponibles.every(t => seleccion[t.id]);
         setSeleccion(prev => {
             const n = { ...prev };
@@ -86,7 +86,7 @@ export function TraspasoTarimas() {
         const todas: any[] = [];
         for (const tarimas of Object.values(tarimasPorHijo)) {
             for (const t of tarimas) {
-                if (t.estado === "RECIBIDA" || t.estado === "PARCIAL") todas.push(t);
+                if (t.estado === "RECIBIDA") todas.push(t);
             }
         }
         const todasSel = todas.length > 0 && todas.every(t => seleccion[t.id]);
@@ -254,10 +254,11 @@ export function TraspasoTarimas() {
                                         </label>
                                     </div>
                                 )}
-                                {padre.hijos.map((hijo: any) => {
-                                    const tarimas = tarimasPorHijo[hijo.lote_id] || [];
-                                    const recibidas = tarimas.filter((t: any) => t.estado === "RECIBIDA" || t.estado === "PARCIAL");
-                                    const disponibles = recibidas.filter((t: any) => !t.bodega_destino_id);
+                                                    {padre.hijos.map((hijo: any) => {
+                                                                        const tarimas = tarimasPorHijo[hijo.lote_id] || [];
+                                                                        const recibidas = tarimas.filter((t: any) => t.estado === "RECIBIDA" || t.estado === "PARCIAL");
+                                                                        const disponibles = recibidas.filter((t: any) => !t.bodega_destino_id);
+                                                                        const parciales = tarimas.filter((t: any) => t.estado === "PARCIAL" && !t.bodega_destino_id);
                                     return (
                                         <div key={hijo.lote_id} style={{
                                             marginBottom: 10, padding: 12, border: "1px solid #e0e0e0", borderRadius: 8,
@@ -271,29 +272,34 @@ export function TraspasoTarimas() {
                                                         (P: {hijo.pendientes} | R: {hijo.recibidas}{hijo.parcial > 0 ? ` | Par: ${hijo.parcial}` : ""}{hijo.asignadas > 0 ? ` | A: ${hijo.asignadas}` : ""}{hijo.en_transito > 0 ? ` | T: ${hijo.en_transito}` : ""})
                                                     </span>
                                                 </div>
-                                                {recibidas.length > 0 && (
-                                                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                                                        {hijo.asignadas > 0 && (
-                                                            <span style={{ fontSize: 11, color: "#f57f17", fontWeight: "bold" }}>
-                                                                {hijo.asignadas} asig.
-                                                            </span>
-                                                        )}
-                                                        {hijo.en_transito > 0 && (
-                                                            <span style={{ fontSize: 11, color: "#1565c0", fontWeight: "bold" }}>
-                                                                {hijo.en_transito} tráns.
-                                                            </span>
-                                                        )}
-                                                        {disponibles.some(t => seleccion[t.id]) && (
-                                                            <span style={{ fontSize: 11, fontWeight: "bold", color: "#1565c0" }}>
-                                                                {disponibles.every(t => seleccion[t.id]) ? "Todas" : `${disponibles.filter(t => seleccion[t.id]).length} sel.`}
-                                                            </span>
-                                                        )}
-                                                        <button onClick={() => seleccionarHijo(hijo.lote_id)}
-                                                            style={{ padding: "3px 8px", background: "#f0f2f5", border: "1px solid #ddd", borderRadius: 4, cursor: "pointer", fontSize: 11, whiteSpace: "nowrap" }}>
-                                                            {disponibles.every(t => seleccion[t.id]) ? "Desmarcar" : `Sel. ${disponibles.length} disponibles`}
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                                        {recibidas.length > 0 && (
+                                                                                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                                                                        {parciales.length > 0 && (
+                                                                                            <span style={{ fontSize: 11, color: "#9c27b0", fontWeight: "bold" }}>
+                                                                                                {parciales.length} parcial(es)
+                                                                                            </span>
+                                                                                        )}
+                                                                                        {hijo.asignadas > 0 && (
+                                                                                            <span style={{ fontSize: 11, color: "#f57f17", fontWeight: "bold" }}>
+                                                                                                {hijo.asignadas} asig.
+                                                                                            </span>
+                                                                                        )}
+                                                                                        {hijo.en_transito > 0 && (
+                                                                                            <span style={{ fontSize: 11, color: "#1565c0", fontWeight: "bold" }}>
+                                                                                                {hijo.en_transito} tráns.
+                                                                                            </span>
+                                                                                        )}
+                                                                                        {disponibles.some(t => seleccion[t.id]) && (
+                                                                                            <span style={{ fontSize: 11, fontWeight: "bold", color: "#1565c0" }}>
+                                                                                                {disponibles.every(t => seleccion[t.id]) ? "Todas" : `${disponibles.filter(t => seleccion[t.id]).length} sel.`}
+                                                                                            </span>
+                                                                                        )}
+                                                                                        <button onClick={() => seleccionarHijo(hijo.lote_id)}
+                                                                                            style={{ padding: "3px 8px", background: "#f0f2f5", border: "1px solid #ddd", borderRadius: 4, cursor: "pointer", fontSize: 11, whiteSpace: "nowrap" }}>
+                                                                                            {disponibles.every(t => seleccion[t.id]) ? "Desmarcar" : `Sel. ${disponibles.length} disponibles`}
+                                                                                        </button>
+                                                                                    </div>
+                                                                                )}
                                             </div>
                                             {tarimas.length > 0 ? (
                                                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
@@ -325,8 +331,15 @@ export function TraspasoTarimas() {
                                                                     <td style={{ padding: "4px 6px", fontFamily: "monospace", fontSize: 10 }}>{t.codigo_qr}</td>
                                                                     <td style={{ padding: "4px 6px" }}>{t.tarima_tipo_nombre}</td>
                                                                     <td style={{ padding: "4px 6px" }}>{t.numero_tarima}</td>
-                                                                    <td style={{ padding: "4px 6px", fontSize: 11 }}>{restantes}/{t.cajas_originales}</td>
-                                                                    <td style={{ padding: "4px 6px" }}>
+                                                                        <td style={{ padding: "4px 6px", fontSize: 11 }}>
+                                                                            {restantes}/{t.cajas_originales}
+                                                                            {t.estado === "PARCIAL" && !t.bodega_destino_id && (
+                                                                                <div style={{ fontSize: 10, color: "#9c27b0", marginTop: 1 }}>
+                                                                                    {Number(t.cajas_originales) - restantes} ya transferidas
+                                                                                </div>
+                                                                            )}
+                                                                        </td>
+                                                                        <td style={{ padding: "4px 6px" }}>
                                                                         {puede && seleccion[t.id] ? (
                                                                             <input type="number" min={1} max={restantes} step="0.5"
                                                                                 value={cajasTransferir[t.id] ?? restantes}
