@@ -325,8 +325,10 @@ function POSFormMayoreo({ onClose, onDone, onTicket }: { onClose: () => void; on
                 })),
             });
             setMsg(`Venta ${venta.folio} registrada`);
-            const resTicket = await fetch(`${API}/ticket/${venta.id}?token=${localStorage.getItem("token")}`);
-            onTicket(await resTicket.text());
+            try {
+                const resTicket = await fetch(`${API}/ticket/${venta.id}?token=${localStorage.getItem("token")}`);
+                onTicket(await resTicket.text());
+            } catch {}
             onDone();
         } catch (e: any) { setMsg("Error: " + (e.message || "")); }
     };
@@ -564,7 +566,10 @@ function POSFormMayoreo({ onClose, onDone, onTicket }: { onClose: () => void; on
                             </div>
                         </div>
                     )}
-                    {msg && <div style={{ padding: 6, borderRadius: 8, fontSize: 12, background: msg.includes("Error") ? "#fef2f2" : "#e8f5e9", color: msg.includes("Error") ? "#dc2626" : "#1a8a3a", marginBottom: 6 }}>{msg}</div>}
+                    {msg && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, fontSize: 12, background: msg.includes("Error") ? "#fef2f2" : "#e8f5e9", color: msg.includes("Error") ? "#dc2626" : "#1a8a3a", marginBottom: 6 }}>
+                        <span style={{ flex: 1 }}>{msg}</span>
+                        <button onClick={() => setMsg("")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "inherit", padding: 0, lineHeight: 1 }}>✕</button>
+                    </div>}
                     <div className="btn-group" style={{ display: "flex", gap: 8 }}>
                         <button onClick={handleSubmit} disabled={!items.length || (tipoPago === "credito" && !clienteId) || (tipoPago === "contado" && (parseFloat(montoRecibido) || 0) < subtotal)}
                             style={{ flex: 1, padding: 10, background: items.length && !(tipoPago === "credito" && !clienteId) && !(tipoPago === "contado" && (parseFloat(montoRecibido) || 0) < subtotal) ? "#1a8a3a" : "#ccc", color: "#fff", border: "none", borderRadius: 8, cursor: items.length && !(tipoPago === "credito" && !clienteId) && !(tipoPago === "contado" && (parseFloat(montoRecibido) || 0) < subtotal) ? "pointer" : "not-allowed", fontSize: 14, fontWeight: "bold" }}>
