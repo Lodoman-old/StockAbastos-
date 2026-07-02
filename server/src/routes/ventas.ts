@@ -227,11 +227,12 @@ export async function ventasRoutes(app: FastifyInstance) {
         const folio = `MAY-${fecha.replace(/-/g, "")}-${String(seq.rows[0].seq).padStart(4, "0")}`;
 
         const venta = await query(`
-            INSERT INTO ventas (folio, bodega_id, total_kg, total, tipo_pago, cliente_id, fecha_vencimiento, monto_efectivo, monto_cambio)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *
+            INSERT INTO ventas (folio, bodega_id, total_kg, total, tipo_pago, cliente_id, fecha_vencimiento, saldo_pendiente, monto_efectivo, monto_cambio)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
         `, [
             folio, bodega_id, totalKg, total, tipo_pago || "contado",
             cliente_id || null, fecha_vencimiento || null,
+            tipo_pago === "credito" ? total : 0,
             monto_efectivo || total, monto_cambio || 0,
         ]);
 

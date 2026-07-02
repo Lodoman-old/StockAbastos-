@@ -89,7 +89,7 @@ export async function reportesRoutes(app: FastifyInstance) {
             SELECT v.id AS venta_id, v.folio, v.created_at, v.total, v.saldo_pendiente, v.fecha_vencimiento,
                    c.nombre AS cliente_nombre, c.telefono AS cliente_telefono
             FROM ventas v
-            JOIN clientes c ON c.id = v.cliente_id
+            LEFT JOIN clientes c ON c.id = v.cliente_id
             ${where}
             ORDER BY v.fecha_vencimiento ASC NULLS LAST, v.created_at DESC
         `, params);
