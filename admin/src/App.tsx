@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { HashRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Productos } from "./pages/Productos";
@@ -136,6 +136,8 @@ function AdminLayout({ children, sidebarOpen, onToggle, onLogout }: { children: 
     const [hidePrecios, setHidePrecios] = useState(false);
     const [hidePorVencer, setHidePorVencer] = useState(false);
     const [hideStockBajo, setHideStockBajo] = useState(false);
+    const location = useLocation();
+    useEffect(() => { setHidePrecios(false); setHidePorVencer(false); setHideStockBajo(false); }, [location.pathname]);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
