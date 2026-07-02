@@ -208,10 +208,17 @@ export async function ventasRoutes(app: FastifyInstance) {
         const { bodega_id, items, tipo_pago, cliente_id, fecha_vencimiento, monto_efectivo, monto_cambio } = request.body;
         if (!items.length) return reply.status(400).send({ error: "Sin productos" });
 
-        for (const item of items) {
-            if (item.modalidad === "caja_pesada" && (!item.cantidad || item.cantidad <= 0)) {
-                return reply.status(400).send({ error: `Falta el peso neto del producto ${item.producto_id || ""}` });
+        const sinPeso = items.filter(i => i.modalidad === "caja_pesada" && (!i.cantidad || i.cantidad <= 0));
+        if (sinPeso.length) {
+            const ids: string[] = [...new Set(sinPeso.map(i => i.producto_id).filter((id): id is string => !!id))];
+            let nombres = ids;
+            if (ids.length) {
+                const prods = await query("SELECT id, nombre FROM productos WHERE id = ANY($1)", [ids]);
+                const mapa: Record<string, string> = {};
+                for (const p of prods.rows) mapa[p.id] = p.nombre;
+                nombres = ids.map(id => mapa[id] || id);
             }
+            return reply.status(400).send({ error: `Falta el peso neto de: ${nombres.join(", ")}` });
         }
 
         const total = items.reduce((s, i) => s + i.subtotal, 0);
