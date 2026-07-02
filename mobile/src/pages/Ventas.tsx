@@ -10,7 +10,7 @@ export function Ventas() {
     const isOnline = useNetwork();
     const [ventas, setVentas] = useState<any[]>([]);
     const [bodegas, setBodegas] = useState<any[]>([]);
-    const [lotesDisp, setLotesDisp] = useState<any[]>([]);
+    const [productos, setProductos] = useState<any[]>([]);
     const [showPOS, setShowPOS] = useState(false);
     const [bodegaId, setBodegaId] = useState("");
     const [items, setItems] = useState<any[]>([]);
@@ -20,7 +20,6 @@ export function Ventas() {
     const [selectedPausedId, setSelectedPausedId] = useState("");
     const [search, setSearch] = useState("");
     const [montoRecibido, setMontoRecibido] = useState("");
-    const [ubicacionPrincipal, setUbicacionPrincipal] = useState<any>(null);
     const [cajaAbierta, setCajaAbierta] = useState<boolean | null>(null);
     const [montoApertura, setMontoApertura] = useState("0");
     const [showCobros, setShowCobros] = useState(false);
@@ -33,8 +32,7 @@ export function Ventas() {
     useEffect(() => {
         if (!isOnline) return;
         get("/ventas").then(setVentas).catch(() => {});
-        get("/bodegas").then(setBodegas).catch(() => {});
-        get("/ubicaciones/principal").then(setUbicacionPrincipal).catch(() => {});
+        get("/bodegas").then((b: any[]) => setBodegas(b.filter((x: any) => !x.es_mostrador))).catch(() => {});
         get("/cortes/esta-abierto").then(r => setCajaAbierta(r.abierto)).catch(() => setCajaAbierta(true));
     }, [isOnline]);
 
@@ -48,23 +46,9 @@ export function Ventas() {
     }
 
     function abrirPOS() {
-        get("/bodegas").then(b => {
-            setBodegas(b);
-            let ubicacion = ubicacionPrincipal;
-            let defId = "";
-            if (ubicacion?.bodegas?.length) {
-                const ubBodegas = b.filter((bb: any) => ubicacion.bodegas.some((ub: any) => ub.id === bb.id));
-                const def = ubBodegas.find((bb: any) => bb.es_default) || ubBodegas[0];
-                if (def) { setBodegaId(def.id); defId = def.id; }
-            } else if (b.length) {
-                setBodegaId(b[0].id); defId = b[0].id;
-            }
-            if (defId) {
-                get(`/ventas/lotes-disponibles?bodega_id=${defId}`).then(setLotesDisp).catch(() => {});
-            } else {
-                get("/ventas/lotes-disponibles").then(setLotesDisp).catch(() => {});
-            }
-        });
+        const filtradas = bodegas.filter((x: any) => !x.es_mostrador);
+        const def = filtradas.find((x: any) => x.es_default) || filtradas[0];
+        if (def) setBodegaId(def.id);
         get("/ventas/pausadas").then(setPausedSales).catch(() => {});
         setShowPOS(true);
         setItems([]);
@@ -73,46 +57,56 @@ export function Ventas() {
         setSearch("");
     }
 
-    function addItem(lote: any) {
-        const esUnidad = lote.unidad_venta === "PIEZA";
-        setItems([...items, {
-            lote_id: lote.id,
-            producto_id: lote.producto_id || "",
-            producto_nombre: lote.producto_nombre,
-            codigo_lote: lote.codigo_lote,
-            codigo_de_barras: lote.codigo_de_barras || "",
-            precio_por_kg: parseFloat(lote.precio_diario_kg || lote.precio_por_kg || 0),
-            precio_por_caja: parseFloat(lote.precio_diario_caja || lote.precio_por_caja || 0),
-            precio_por_unidad: parseFloat(lote.precio_por_unidad || 0),
-            cantidad_cajas: 0,
-            cantidad_kg: 0,
-            cantidad_unidades: esUnidad ? 1 : 0,
-            tipo_precio: esUnidad ? "UNIDAD" : "KG",
-            max_kg: lote.cantidad_actual_kg,
-            max_cajas: lote.total_cajas_posibles || 0,
-            max_unidades: lote.total_unidades_posibles || 0,
-            unidad_venta: lote.unidad_venta,
-        }]);
-    }
-
-    const filteredLotes = lotesDisp.filter((l: any) => {
-        if (!search.trim()) return true;
-        const q = search.toLowerCase();
-        return l.producto_nombre?.toLowerCase().includes(q)
-            || l.codigo_de_barras?.toLowerCase().includes(q);
-    });
-
     useEffect(() => {
         if (showPOS && bodegaId) {
-            get(`/ventas/lotes-disponibles?bodega_id=${bodegaId}`).then(setLotesDisp).catch(() => {});
+            get(`/ventas/productos-disponibles?bodega_id=${bodegaId}`).then(setProductos).catch(() => {});
         }
     }, [bodegaId, showPOS]);
 
+    const filtered = productos.filter((p: any) => {
+        if (!search.trim()) return true;
+        const q = search.toLowerCase();
+        return p.producto_nombre?.toLowerCase().includes(q) || p.codigo_de_barras?.toLowerCase().includes(q);
+    });
+
+    function addItem(p: any, modalidad: string) {
+        const idx = items.findIndex(i => i.producto_id === p.producto_id && i.modalidad === modalidad);
+        if (idx >= 0) {
+            const newItems = [...items];
+            if (modalidad === "caja_pesada") {
+                newItems[idx] = { ...newItems[idx], cantidad_kg: (newItems[idx].cantidad_kg || 0) + 1 };
+            } else {
+                newItems[idx] = { ...newItems[idx], cantidad: (newItems[idx].cantidad || 0) + 1 };
+            }
+            newItems[idx].subtotal = calcSubtotal(newItems[idx]);
+            setItems(newItems);
+            return;
+        }
+        const item: any = {
+            producto_id: p.producto_id,
+            producto_nombre: p.producto_nombre,
+            modalidad,
+            precio_unitario: modalidad === "caja_pesada" ? parseFloat(p.precio_mayoreo_kg_hoy || p.precio_mayoreo_kg || 0)
+                : modalidad === "caja_sellada_entera" || modalidad === "caja_sellada_media" ? parseFloat(p.precio_caja_sellada_hoy || p.precio_caja_sellada || 0)
+                : parseFloat(p.precio_unidad_hoy || p.precio_por_unidad || 0),
+            cantidad: modalidad === "caja_pesada" ? 1 : 1,
+            cantidad_kg: modalidad === "caja_pesada" ? 1 : 0,
+            cajas: 0,
+            bodega_id: bodegaId,
+        };
+        item.subtotal = calcSubtotal(item);
+        setItems([...items, item]);
+    }
+
+    function calcSubtotal(it: any) {
+        if (it.modalidad === "caja_pesada") return (it.cantidad_kg || 0) * it.precio_unitario;
+        return (it.cantidad || 0) * it.precio_unitario;
+    }
+
     function updateItem(i: number, field: string, value: any) {
         const newItems = [...items];
-        (newItems[i] as any)[field] = value;
-        if (field === "tipo_precio" && value === "CAJA" && newItems[i].cantidad_cajas === 0) newItems[i].cantidad_cajas = 1;
-        if (field === "tipo_precio" && value === "KG" && newItems[i].cantidad_kg === 0) newItems[i].cantidad_kg = 1;
+        newItems[i][field] = value;
+        newItems[i].subtotal = calcSubtotal(newItems[i]);
         setItems(newItems);
     }
 
@@ -120,11 +114,7 @@ export function Ventas() {
         setItems(items.filter((_, idx) => idx !== i));
     }
 
-    const subtotal = items.reduce((sum, it) => {
-        if (it.tipo_precio === "CAJA" && it.cantidad_cajas > 0) return sum + it.cantidad_cajas * it.precio_por_caja;
-        if (it.tipo_precio === "UNIDAD" && it.cantidad_unidades > 0) return sum + it.cantidad_unidades * it.precio_por_unidad;
-        return sum + (it.cantidad_kg || 0) * it.precio_por_kg;
-    }, 0);
+    const subtotal = items.reduce((s, it) => s + (it.subtotal || 0), 0);
 
     async function handlePause() {
         if (!items.length) return;
@@ -133,12 +123,11 @@ export function Ventas() {
             await post("/ventas/pausar", {
                 bodega_id: bodegaId,
                 items: items.map(it => ({
-                    lote_id: it.lote_id,
                     producto_id: it.producto_id,
-                    cantidad_kg: it.tipo_precio === "KG" ? it.cantidad_kg : 0,
-                    cantidad_cajas: it.tipo_precio === "CAJA" ? it.cantidad_cajas : 0,
-                    precio_unitario: it.tipo_precio === "CAJA" ? it.precio_por_caja : it.precio_por_kg,
-                    tipo_precio: it.tipo_precio,
+                    modalidad: it.modalidad,
+                    cantidad: it.modalidad === "caja_pesada" ? it.cantidad_kg : it.cantidad,
+                    precio_unitario: it.precio_unitario,
+                    subtotal: it.subtotal,
                 })),
             });
             setMsg("Venta pausada");
@@ -156,36 +145,17 @@ export function Ventas() {
             const paused = await get(`/ventas/pausadas/${selectedPausedId}`);
             const data = paused.datos_json;
             if (!data?.items?.length) { setMsg("Error: venta pausada vacía"); return; }
-            let stockOk = true;
-            for (const savedItem of data.items) {
-                const lote = lotesDisp.find((l: any) => l.id === savedItem.lote_id);
-                if (!lote) { stockOk = false; setMsg(`El lote ya no está disponible`); break; }
-                const kgNeeded = savedItem.tipo_precio === "CAJA"
-                    ? (savedItem.cantidad_cajas || 0) * (lote.peso_estimado_kg || 1)
-                    : (savedItem.cantidad_kg || 0);
-                if (parseFloat(lote.cantidad_actual_kg) < kgNeeded) {
-                    stockOk = false; setMsg(`Stock insuficiente para ${lote.producto_nombre}`); break;
-                }
-            }
-            if (!stockOk) return;
             setBodegaId(data.bodega_id || bodegas[0]?.id || "");
-            const restored = data.items.map((savedItem: any) => {
-                const lote = lotesDisp.find((l: any) => l.id === savedItem.lote_id);
-                return {
-                    lote_id: savedItem.lote_id,
-                    producto_id: savedItem.producto_id || lote?.producto_id || "",
-                    producto_nombre: lote?.producto_nombre || "Desconocido",
-                    codigo_lote: lote?.codigo_lote || "",
-                    precio_por_kg: parseFloat(lote?.precio_diario_kg || lote?.precio_por_kg || 0),
-                    precio_por_caja: parseFloat(lote?.precio_diario_caja || lote?.precio_por_caja || 0),
-                    cantidad_cajas: savedItem.tipo_precio === "CAJA" ? savedItem.cantidad_cajas : 0,
-                    cantidad_kg: savedItem.tipo_precio === "KG" ? savedItem.cantidad_kg : 0,
-                    tipo_precio: savedItem.tipo_precio || "KG",
-                    max_cajas: lote?.total_cajas_posibles || 0,
-                    max_kg: lote?.cantidad_actual_kg || 0,
-                };
-            });
-            setItems(restored);
+            setItems(data.items.map((savedItem: any) => ({
+                producto_id: savedItem.producto_id,
+                producto_nombre: savedItem.producto_nombre || "Desconocido",
+                modalidad: savedItem.modalidad,
+                cantidad: savedItem.modalidad === "caja_pesada" ? 1 : (savedItem.cantidad || 1),
+                cantidad_kg: savedItem.modalidad === "caja_pesada" ? (savedItem.cantidad || 1) : 0,
+                precio_unitario: savedItem.precio_unitario,
+                subtotal: savedItem.subtotal || 0,
+                bodega_id: data.bodega_id,
+            })));
             await fetch(`${getApiBase()}/ventas/pausadas/${paused.id}`, { method: "DELETE", headers: { Authorization: "Bearer " + localStorage.getItem("token") } });
             setPausedSales(prev => prev.filter(p => p.id !== paused.id));
             setSelectedPausedId("");
@@ -200,21 +170,22 @@ export function Ventas() {
         setMsg("Procesando...");
         const cambio = Math.max(0, (parseFloat(montoRecibido) || 0) - subtotal);
         try {
-            const venta = await post("/ventas", {
+            const body: any = {
                 bodega_id: bodegaId,
                 tipo_pago: "contado",
                 monto_efectivo: parseFloat(montoRecibido) || 0,
                 monto_cambio: cambio,
                 items: items.map(it => ({
-                    lote_id: it.lote_id,
                     producto_id: it.producto_id,
-                    cantidad_kg: it.tipo_precio === "KG" ? it.cantidad_kg : undefined,
-                    cantidad_cajas: it.tipo_precio === "CAJA" ? it.cantidad_cajas : undefined,
-                    cantidad_unidades: it.tipo_precio === "UNIDAD" ? it.cantidad_unidades : undefined,
-                    precio_unitario: it.tipo_precio === "CAJA" ? it.precio_por_caja : it.tipo_precio === "UNIDAD" ? it.precio_por_unidad : it.precio_por_kg,
-                    tipo_precio: it.tipo_precio,
+                    modalidad: it.modalidad,
+                    cantidad: it.modalidad === "caja_pesada" ? it.cantidad_kg : it.cantidad,
+                    ...(it.modalidad === "caja_pesada" ? { cajas: 0 } : {}),
+                    precio_unitario: it.precio_unitario,
+                    subtotal: it.subtotal,
+                    bodega_id: it.bodega_id || bodegaId,
                 })),
-            });
+            };
+            const venta = await post("/ventas", body);
             setMsg("Venta registrada");
             const token = localStorage.getItem("token");
             const res = await fetch(`${getApiBase()}/ticket/${venta.id}?token=${token}`);
@@ -254,10 +225,6 @@ export function Ventas() {
     const card: React.CSSProperties = {
         background: "#fff", borderRadius: 12, padding: 16, marginBottom: 12,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)", borderLeft: "4px solid #2196f3",
-    };
-
-    const input: React.CSSProperties = {
-        width: 60, padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 14, textAlign: "center",
     };
 
     if (!showPOS) {
@@ -317,7 +284,6 @@ export function Ventas() {
                         <p style={{ fontSize: 13, color: "#555", margin: "4px 0" }}>{v.bodega_nombre}</p>
                         <p style={{ fontSize: 12, color: "#888", margin: 0 }}>
                             {v.total_kg ? `${parseFloat(v.total_kg).toFixed(1)} kg` : "0 kg"}
-                            {v.total_cajas ? ` · ${v.total_cajas} cajas` : ""}
                         </p>
                         <button onClick={async () => {
                             const token = localStorage.getItem("token");
@@ -371,7 +337,7 @@ export function Ventas() {
                                             </div>
                                         </div>
                                     ))}
-                                {!creditosPendientes.length && <p style={{ color: "#999", textAlign: "center", fontSize: 13 }}>Presiona \"Cargar créditos pendientes\"</p>}
+                                {!creditosPendientes.length && <p style={{ color: "#999", textAlign: "center", fontSize: 13 }}>Presiona "Cargar créditos pendientes"</p>}
                             </>
                         ) : (
                             <div>
@@ -427,6 +393,7 @@ export function Ventas() {
             </>
         );
     }
+
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -439,26 +406,46 @@ export function Ventas() {
                 <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 4 }}>Bodega</label>
                 <select value={bodegaId} onChange={e => setBodegaId(e.target.value)}
                     style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 8, fontSize: 14, boxSizing: "border-box" }}>
-                    {bodegas.map((b: any) => <option key={b.id} value={b.id}>{b.nombre}</option>)}
+                    {bodegas.filter((b: any) => !b.es_mostrador).map((b: any) => <option key={b.id} value={b.id}>{b.nombre}</option>)}
                 </select>
             </div>
 
-            <input type="text" placeholder="Buscar producto (nombre o código de barras)..." value={search}
+            <input type="text" placeholder="Buscar producto..." value={search}
                 onChange={e => setSearch(e.target.value)}
                 style={{ width: "100%", padding: "10px 12px", border: "2px solid #1a8a3a", borderRadius: 8, fontSize: 14, boxSizing: "border-box", marginBottom: 10 }} />
 
             <div style={{ marginBottom: 12 }}>
                 <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 4 }}>Agregar producto</label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    {filteredLotes.filter((l: any) => !items.find(i => i.lote_id === l.id)).map((l: any) => (
-                        <button key={l.id} onClick={() => addItem(l)}
-                            style={{ background: "#e8f5e9", border: "1px solid #a5d6a7", borderRadius: 8, padding: "8px 10px", fontSize: 13, cursor: "pointer", textAlign: "left" }}>
-                            <strong>{l.producto_nombre}</strong>
-                            {l.codigo_de_barras && <span style={{ fontSize: 10, color: "#666", marginLeft: 4 }}>[{l.codigo_de_barras}]</span>}
-                            <span style={{ fontSize: 11, color: "#666" }}> — {l.codigo_lote} ({parseFloat(l.cantidad_actual_kg).toFixed(1)} kg)</span>
-                        </button>
-                    ))}
-                    {!filteredLotes.filter((l: any) => !items.find(i => i.lote_id === l.id)).length && <p style={{ fontSize: 12, color: "#999" }}>No hay productos disponibles</p>}
+                    {filtered.map((p: any) => {
+                        const hasCP = p.modalidad_caja_pesada;
+                        const hasCS = p.modalidad_caja_sellada;
+                        const hasUN = p.modalidad_unidad;
+                        return (
+                            <div key={p.producto_id} style={{ background: "#f9f9f9", borderRadius: 8, padding: 10, border: "1px solid #eee" }}>
+                                <div style={{ fontWeight: "bold", fontSize: 14, marginBottom: 6 }}>{p.producto_nombre}</div>
+                                <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                                    {hasCP && <button onClick={() => addItem(p, "caja_pesada")}
+                                        style={{ padding: "6px 10px", background: "#1a8a3a", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: "bold" }}>
+                                        KG (${p.precio_mayoreo_kg_hoy || p.precio_mayoreo_kg || 0}/kg)
+                                    </button>}
+                                    {hasCS && <button onClick={() => addItem(p, "caja_sellada_entera")}
+                                        style={{ padding: "6px 10px", background: "#1565c0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: "bold" }}>
+                                        Caja entera (${p.precio_caja_sellada_hoy || p.precio_caja_sellada || 0})
+                                    </button>}
+                                    {hasCS && <button onClick={() => addItem(p, "caja_sellada_media")}
+                                        style={{ padding: "6px 10px", background: "#5c6bc0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: "bold" }}>
+                                        Media caja
+                                    </button>}
+                                    {hasUN && <button onClick={() => addItem(p, "unidad")}
+                                        style={{ padding: "6px 10px", background: "#ff9800", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11, fontWeight: "bold" }}>
+                                        Unidad (${p.precio_unidad_hoy || p.precio_por_unidad || 0})
+                                    </button>}
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {!filtered.length && <p style={{ fontSize: 12, color: "#999" }}>No hay productos disponibles</p>}
                 </div>
             </div>
 
@@ -468,40 +455,28 @@ export function Ventas() {
                         <strong style={{ fontSize: 14 }}>{it.producto_nombre}</strong>
                         <button onClick={() => removeItem(i)} style={{ background: "none", border: "none", color: "#f44336", fontSize: 18, cursor: "pointer" }}>×</button>
                     </div>
+                    <div style={{ fontSize: 12, color: "#555", marginBottom: 4 }}>
+                        {it.modalidad === "caja_pesada" ? "Peso variable" : it.modalidad === "caja_sellada_entera" ? "Caja entera" : it.modalidad === "caja_sellada_media" ? "Media caja" : "Unidad"}
+                    </div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                        {it.unidad_venta !== "PIEZA" && (
-                            <select value={it.tipo_precio} onChange={e => updateItem(i, "tipo_precio", e.target.value)}
-                                style={{ padding: "6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12 }}>
-                                <option value="KG">KG</option>
-                                <option value="CAJA">Caja</option>
-                            </select>
-                        )}
-                        {it.tipo_precio === "KG" && (
+                        {it.modalidad === "caja_pesada" && (
                             <>
                                 <input type="number" min={0.1} step={0.1} value={it.cantidad_kg}
                                     onChange={e => updateItem(i, "cantidad_kg", parseFloat(e.target.value) || 0)}
-                                    style={input} />
-                                <span style={{ fontSize: 12 }}>kg × ${it.precio_por_kg.toFixed(2)}</span>
+                                    style={{ width: 60, padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 14, textAlign: "center" }} />
+                                <span style={{ fontSize: 12 }}>kg × ${it.precio_unitario.toFixed(2)}</span>
                             </>
                         )}
-                        {it.tipo_precio === "CAJA" && (
+                        {it.modalidad !== "caja_pesada" && (
                             <>
-                                <input type="number" min={1} step={1} value={it.cantidad_cajas}
-                                    onChange={e => updateItem(i, "cantidad_cajas", parseInt(e.target.value) || 0)}
-                                    style={input} />
-                                <span style={{ fontSize: 12 }}>cajas × ${it.precio_por_caja.toFixed(2)}</span>
-                            </>
-                        )}
-                        {it.tipo_precio === "UNIDAD" && it.unidad_venta === "PIEZA" && (
-                            <>
-                                <input type="number" min={1} step={1} value={it.cantidad_unidades}
-                                    onChange={e => updateItem(i, "cantidad_unidades", parseInt(e.target.value) || 0)}
-                                    style={input} />
-                                <span style={{ fontSize: 12 }}>piezas × ${it.precio_por_unidad.toFixed(2)}</span>
+                                <input type="number" min={1} step={1} value={it.cantidad}
+                                    onChange={e => updateItem(i, "cantidad", parseInt(e.target.value) || 1)}
+                                    style={{ width: 60, padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 14, textAlign: "center" }} />
+                                <span style={{ fontSize: 12 }}>× ${it.precio_unitario.toFixed(2)}</span>
                             </>
                         )}
                         <span style={{ fontSize: 14, fontWeight: "bold", marginLeft: "auto" }}>
-                            ${(it.tipo_precio === "CAJA" ? it.cantidad_cajas * it.precio_por_caja : it.tipo_precio === "UNIDAD" ? it.cantidad_unidades * it.precio_por_unidad : it.cantidad_kg * it.precio_por_kg).toFixed(2)}
+                            ${it.subtotal.toFixed(2)}
                         </span>
                     </div>
                 </div>
@@ -582,4 +557,3 @@ export function Ventas() {
         </div>
     );
 }
-

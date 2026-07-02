@@ -15,8 +15,9 @@ export function Dashboard() {
         get("/precios-diarios/pendientes").then((data) => {
             setPreciosPendientes(data.filter((p: any) => !p.precio_hoy_kg).length);
         }).catch(() => {});
-        get("/dashboard/reportes").then((data) => {
-            setStockBajo(data.productos_bajo_stock?.length || 0);
+        get("/dashboard/inventario").then((data) => {
+            const total = data.reduce((s: number, r: any) => s + Number(r.cajas || 0) + Number(r.cajas_parciales || 0), 0);
+            setStockBajo(total < 50 ? data.length : 0);
         }).catch(() => {});
         get("/cortes/esta-abierto").then(r => setCajaAbierta(r.abierto)).catch(() => setCajaAbierta(null));
     }, []);
@@ -50,7 +51,7 @@ export function Dashboard() {
             )}
             {stockBajo > 0 && (
                 <div style={{ background: "#fef2f2", color: "#991b1b", padding: "10px 14px", borderRadius: 8, marginBottom: 16, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span><strong>{stockBajo}</strong> productos con stock bajo</span>
+                    <span>Inventario bajo</span>
                     <span style={{ color: "#dc2626", fontWeight: "bold" }} onClick={() => window.location.hash = "#/reportes"}>Ver →</span>
                 </div>
             )}
@@ -58,10 +59,8 @@ export function Dashboard() {
                 {[
                     { label: "Productos", value: stats.productos },
                     { label: "Bodegas", value: stats.bodegas },
-                    { label: "Lotes activos", value: stats.lotes_activos },
-                    { label: "Stock total", value: `${parseFloat(stats.stock_total_kg || 0).toFixed(1)} kg` },
+                    { label: "Lotes activos", value: stats.lotes },
                     { label: "Ventas (30d)", value: stats.ventas_30d },
-                    { label: "Traspasos", value: stats.traspasos },
                 ].map(item => (
                     <div key={item.label} style={{
                         background: "#fff", borderRadius: 12, padding: 16, textAlign: "center",
