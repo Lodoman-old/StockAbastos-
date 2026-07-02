@@ -25,6 +25,7 @@ export function POSMenudeo() {
     const [pausedSales, setPausedSales] = useState<any[]>([]);
     const [showPaused, setShowPaused] = useState(false);
     const [msg, setMsg] = useState("");
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
     const [cajaAbierta, setCajaAbierta] = useState<boolean | null>(null);
 
     useEffect(() => {

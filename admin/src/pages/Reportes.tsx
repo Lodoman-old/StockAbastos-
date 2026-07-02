@@ -58,6 +58,7 @@ export function Reportes() {
     );
 
     const maxKg = Math.max(...(data.top_productos || []).map((p: any) => parseFloat(p.total_kg)), 1);
+    const maxCs = Math.max(...(data.top_productos_cs || []).map((p: any) => parseFloat(p.total_cajas)), 1);
     const maxIngreso = Math.max(...(data.ingresos_mensuales || []).map((m: any) => parseFloat(m.ingresos)), 1);
     const maxVentaBodega = Math.max(...(data.ventas_por_bodega || []).map((b: any) => b.ventas), 1);
 
@@ -90,6 +91,14 @@ export function Reportes() {
                     <Bar key={p.nombre} label={p.nombre} value={parseFloat(p.total_kg)} max={maxKg} suffix=" kg" />
                 ))}
                 {!data.top_productos?.length && <p style={{ color: "#888", fontSize: 13 }}>Sin datos</p>}
+            </Card>
+
+            <Card title="Productos más vendidos (CS, últimos 90 días)"
+                onExport={() => downloadCsv("top-productos-cs.csv", ["Producto", "Cajas", "Ventas"], (data.top_productos_cs || []).map((p: any) => [p.nombre, parseFloat(p.total_cajas).toFixed(1), String(p.num_ventas)]))}>
+                {(data.top_productos_cs || []).map((p: any) => (
+                    <Bar key={p.nombre} label={p.nombre} value={parseFloat(p.total_cajas)} max={maxCs} suffix=" cajas" color="#7b1fa2" />
+                ))}
+                {!data.top_productos_cs?.length && <p style={{ color: "#888", fontSize: 13 }}>Sin datos</p>}
             </Card>
 
             <Card title="Ingresos mensuales (últimos 12 meses)"

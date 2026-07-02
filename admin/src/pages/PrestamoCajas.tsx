@@ -5,6 +5,7 @@ export function PrestamoCajas() {
     const [prestamos, setPrestamos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [msg, setMsg] = useState("");
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
 
     const load = () => {
         setLoading(true);

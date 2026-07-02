@@ -12,6 +12,7 @@ export function RecibirTraspaso() {
     const [selected, setSelected] = useState<any>(null);
     const [detalles, setDetalles] = useState<any[]>([]);
     const [msg, setMsg] = useState("");
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
     const [scanning, setScanning] = useState(false);
     const [codigoManual, setCodigoManual] = useState("");
 

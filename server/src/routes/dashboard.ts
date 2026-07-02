@@ -66,7 +66,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
     });
 
     app.get("/reportes", async () => {
-        const [topProductos, ingresos, ventasPago, ventasBodega, bajoStock, gastosRecientes] = await Promise.all([
+        const [topProductosKg, topProductosCs, ingresos, ventasPago, ventasBodega, bajoStock, gastosRecientes] = await Promise.all([
             query(`
                 SELECT p.nombre, COALESCE(SUM(vd.cantidad_kg), 0)::numeric(10,2) AS total_kg,
                        COUNT(DISTINCT v.id)::int AS num_ventas
@@ -75,8 +75,22 @@ export async function dashboardRoutes(app: FastifyInstance) {
                 JOIN productos p ON p.id = vd.producto_id
                 WHERE v.created_at >= NOW() - INTERVAL '90 days'
                   AND (v.estado IS NULL OR v.estado != 'cancelada')
+                  AND vd.cantidad_kg IS NOT NULL AND vd.cantidad_kg > 0
                 GROUP BY p.id, p.nombre
                 ORDER BY total_kg DESC
+                LIMIT 10
+            `),
+            query(`
+                SELECT p.nombre, COALESCE(SUM(vd.cantidad_cajas), 0)::numeric(10,2) AS total_cajas,
+                       COUNT(DISTINCT v.id)::int AS num_ventas
+                FROM venta_detalles vd
+                JOIN ventas v ON v.id = vd.venta_id
+                JOIN productos p ON p.id = vd.producto_id
+                WHERE v.created_at >= NOW() - INTERVAL '90 days'
+                  AND (v.estado IS NULL OR v.estado != 'cancelada')
+                  AND vd.cantidad_cajas IS NOT NULL AND vd.cantidad_cajas > 0
+                GROUP BY p.id, p.nombre
+                ORDER BY total_cajas DESC
                 LIMIT 10
             `),
             query(`
@@ -128,7 +142,8 @@ export async function dashboardRoutes(app: FastifyInstance) {
         ]);
 
         return {
-            top_productos: topProductos.rows,
+            top_productos: topProductosKg.rows,
+            top_productos_cs: topProductosCs.rows,
             ingresos_mensuales: ingresos.rows,
             ventas_por_tipo_pago: ventasPago.rows,
             ventas_por_bodega: ventasBodega.rows,
