@@ -81,7 +81,7 @@ export async function cortesRoutes(app: FastifyInstance) {
     });
 
     app.get("/esta-abierto", async (request) => {
-        const result = await query("SELECT * FROM cortes WHERE fecha = CURRENT_DATE");
+        const result = await query("SELECT * FROM cortes WHERE cerrado_at IS NULL ORDER BY fecha DESC LIMIT 1");
         if (!result.rows.length || !result.rows[0].abierto_at) {
             return { abierto: false };
         }
@@ -92,9 +92,9 @@ export async function cortesRoutes(app: FastifyInstance) {
         const { id: usuarioId } = request.user as any;
         const { monto_inicial } = request.body;
 
-        const existente = await query("SELECT * FROM cortes WHERE fecha = CURRENT_DATE");
-        if (existente.rows.length && existente.rows[0].abierto_at) {
-            return reply.status(400).send({ error: "La caja ya está abierta para hoy" });
+        const abierto = await query("SELECT * FROM cortes WHERE cerrado_at IS NULL ORDER BY fecha DESC LIMIT 1");
+        if (abierto.rows.length && abierto.rows[0].abierto_at) {
+            return reply.status(400).send({ error: "La caja ya está abierta" });
         }
 
         const result = await query(`
@@ -118,7 +118,7 @@ export async function cortesRoutes(app: FastifyInstance) {
             return reply.status(400).send({ error: "Monto inválido" });
         }
 
-        const corteHoy = await query("SELECT * FROM cortes WHERE fecha = CURRENT_DATE");
+        const corteHoy = await query("SELECT * FROM cortes WHERE cerrado_at IS NULL ORDER BY fecha DESC LIMIT 1");
         if (!corteHoy.rows.length || !corteHoy.rows[0].abierto_at) {
             return reply.status(400).send({ error: "La caja no está abierta" });
         }
@@ -157,14 +157,15 @@ export async function cortesRoutes(app: FastifyInstance) {
         const totalIngresos = parseFloat(ventas.rows[0].total_ingresos);
         const totalGastos = parseFloat(gastos.rows[0].total_gastos);
 
-        const corteActual = await query("SELECT total_retiros FROM cortes WHERE fecha = CURRENT_DATE");
+        const corteActual = await query("SELECT total_retiros, fecha FROM cortes WHERE cerrado_at IS NULL ORDER BY fecha DESC LIMIT 1");
+        const corteFecha = corteActual.rows[0]?.fecha || new Date().toISOString().substring(0, 10);
         const totalRetiros = parseFloat(corteActual.rows[0]?.total_retiros || "0");
 
         const r = await query(`
             INSERT INTO cortes (fecha, total_ventas, total_ingresos, total_kg,
                 ventas_contado, total_contado, ventas_credito, total_credito,
                 total_gastos, total_retiros, saldo_final, cerrado_por, cerrado_at)
-            VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
             ON CONFLICT (fecha) DO UPDATE SET
                 total_ventas = EXCLUDED.total_ventas,
                 total_ingresos = EXCLUDED.total_ingresos,
@@ -182,6 +183,7 @@ export async function cortesRoutes(app: FastifyInstance) {
                 abierto_por = NULL
             RETURNING *
         `, [
+            corteFecha,
             ventas.rows[0].total_ventas, totalIngresos, ventas.rows[0].total_kg,
             contado?.count || 0, parseFloat(contado?.total || "0"),
             credito?.count || 0, parseFloat(credito?.total || "0"),
