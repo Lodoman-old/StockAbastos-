@@ -76,6 +76,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
                 WHERE v.created_at >= NOW() - INTERVAL '90 days'
                   AND (v.estado IS NULL OR v.estado != 'cancelada')
                   AND vd.cantidad_kg IS NOT NULL AND vd.cantidad_kg > 0
+                  AND p.modalidad_caja_pesada = TRUE
                 GROUP BY p.id, p.nombre
                 ORDER BY total_kg DESC
                 LIMIT 10
@@ -89,6 +90,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
                 WHERE v.created_at >= NOW() - INTERVAL '90 days'
                   AND (v.estado IS NULL OR v.estado != 'cancelada')
                   AND vd.cantidad_cajas IS NOT NULL AND vd.cantidad_cajas > 0
+                  AND p.modalidad_caja_sellada = TRUE
                 GROUP BY p.id, p.nombre
                 ORDER BY total_cajas DESC
                 LIMIT 10
