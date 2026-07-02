@@ -50,7 +50,7 @@ export function Impresoras() {
     <div>
       <h1>Impresoras</h1>
 
-      {msg && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 8, background: "#e8f5e9", borderRadius: 8 }}><span style={{ flex: 1 }}>{msg}</span><button onClick={() => setMsg("")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "inherit", padding: 0, lineHeight: 1 }}>✕</button></div>}
+      {msg && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 8, background: "#e8f5e9", borderRadius: 8 }}><button onClick={() => setMsg("")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "inherit", padding: 0, lineHeight: 1 }}>✕</button><span style={{ flex: 1 }}>{msg}</span></div>}
 
       <div className="btn-inline-group" style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <button className="btn" style={{ flex: 1, background: tab === "impresoras" ? "#1a8a3a" : "#ddd", color: tab === "impresoras" ? "#fff" : "#333" }}

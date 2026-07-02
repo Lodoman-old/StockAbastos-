@@ -40,11 +40,11 @@ export function ToastContainer() {
                     marginBottom: 6, cursor: "pointer",
                     boxSizing: "border-box", userSelect: "none", WebkitUserSelect: "none",
                 }}>
-                    <span style={{ flex: 1 }}>{t.message}</span>
                     <button onPointerDown={e => { e.stopPropagation(); dismiss(t.id); }}
                         style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "#fff", fontSize: 14, borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", padding: 0 }}>
                         ✕
                     </button>
+                    <span style={{ flex: 1 }}>{t.message}</span>
                 </div>
             ))}
             <style>{`

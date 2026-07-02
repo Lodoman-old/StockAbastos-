@@ -567,8 +567,8 @@ function POSFormMayoreo({ onClose, onDone, onTicket }: { onClose: () => void; on
                         </div>
                     )}
                     {msg && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, fontSize: 12, background: msg.includes("Error") ? "#fef2f2" : "#e8f5e9", color: msg.includes("Error") ? "#dc2626" : "#1a8a3a", marginBottom: 6 }}>
-                        <span style={{ flex: 1 }}>{msg}</span>
                         <button onClick={() => setMsg("")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "inherit", padding: 0, lineHeight: 1 }}>✕</button>
+                        <span style={{ flex: 1 }}>{msg}</span>
                     </div>}
                     <div className="btn-group" style={{ display: "flex", gap: 8 }}>
                         <button onClick={handleSubmit} disabled={!items.length || (tipoPago === "credito" && !clienteId) || (tipoPago === "contado" && (parseFloat(montoRecibido) || 0) < subtotal)}

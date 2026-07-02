@@ -510,8 +510,8 @@ export function Ventas() {
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, fontSize: 13, margin: "8px 0",
                     background: msg.includes("Error") ? "#fef2f2" : "#e8f5e9",
                     color: msg.includes("Error") ? "#dc2626" : "#1a8a3a" }}>
-                    <span style={{ flex: 1 }}>{msg}</span>
                     <button onClick={() => setMsg("")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "inherit", padding: 0, lineHeight: 1 }}>✕</button>
+                    <span style={{ flex: 1 }}>{msg}</span>
                 </div>
             )}
 
