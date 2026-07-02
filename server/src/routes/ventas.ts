@@ -208,6 +208,12 @@ export async function ventasRoutes(app: FastifyInstance) {
         const { bodega_id, items, tipo_pago, cliente_id, fecha_vencimiento, monto_efectivo, monto_cambio } = request.body;
         if (!items.length) return reply.status(400).send({ error: "Sin productos" });
 
+        for (const item of items) {
+            if (item.modalidad === "caja_pesada" && (!item.cantidad || item.cantidad <= 0)) {
+                return reply.status(400).send({ error: `Falta el peso neto del producto ${item.producto_id || ""}` });
+            }
+        }
+
         const total = items.reduce((s, i) => s + i.subtotal, 0);
 
         // Compute total kg from items
