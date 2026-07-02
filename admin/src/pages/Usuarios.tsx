@@ -10,7 +10,7 @@ export function Usuarios() {
     const [form, setForm] = useState({ email: "", password: "", nombre: "", rol_id: "", bodega_id: "", activo: true });
     const [error, setError] = useState("");
     const [msg, setMsg] = useState("");
-    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 5000); return () => clearTimeout(t); } }, [msg]);
 
     const load = () => Promise.all([
         get("/auth/usuarios").then(setUsuarios),

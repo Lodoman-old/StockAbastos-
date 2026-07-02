@@ -8,7 +8,7 @@ export function CorteDeCaja() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [msg, setMsg] = useState("");
-    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 5000); return () => clearTimeout(t); } }, [msg]);
     const [montoApertura, setMontoApertura] = useState("0");
     const [showRetiro, setShowRetiro] = useState(false);
     const [montoRetiro, setMontoRetiro] = useState("");

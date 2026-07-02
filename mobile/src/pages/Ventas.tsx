@@ -20,7 +20,7 @@ export function Ventas() {
     const [bodegaId, setBodegaId] = useState("");
     const [items, setItems] = useState<any[]>([]);
     const [msg, setMsg] = useState("");
-    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 5000); return () => clearTimeout(t); } }, [msg]);
     const [ticketHtml, setTicketHtml] = useState<string | null>(null);
     const [pausedSales, setPausedSales] = useState<any[]>([]);
     const [search, setSearch] = useState("");

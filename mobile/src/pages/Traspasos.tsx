@@ -12,7 +12,7 @@ export function Traspasos() {
     const [traspasos, setTraspasos] = useState<Traspaso[]>([]);
     const [loading, setLoading] = useState(true);
     const [msg, setMsg] = useState("");
-    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 5000); return () => clearTimeout(t); } }, [msg]);
 
     const load = () => {
         setLoading(true);

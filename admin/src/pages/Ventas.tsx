@@ -142,7 +142,7 @@ function POSFormMayoreo({ onClose, onDone, onTicket }: { onClose: () => void; on
     const [productos, setProductos] = useState<any[]>([]);
     const [items, setItems] = useState<any[]>([]);
     const [msg, setMsg] = useState("");
-    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 5000); return () => clearTimeout(t); } }, [msg]);
     const [tipoPago, setTipoPago] = useState<"contado" | "credito">("contado");
     const [clientes, setClientes] = useState<any[]>([]);
     const [clienteId, setClienteId] = useState("");

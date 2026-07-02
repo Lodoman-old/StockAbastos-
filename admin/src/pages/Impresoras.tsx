@@ -8,7 +8,7 @@ export function Impresoras() {
   const [form, setForm] = useState({ nombre: "", tipo: "ticket", direccion_ip: "", puerto: 9100 });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
-  useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
+  useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 5000); return () => clearTimeout(t); } }, [msg]);
 
   const load = async () => {
     try { setImpresoras(await get("/impresion/impresoras")); } catch {}

@@ -7,7 +7,7 @@ export function Recibir() {
     const [kgReal, setKgReal] = useState("");
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState("");
-    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 8000); return () => clearTimeout(t); } }, [msg]);
+    useEffect(() => { if (msg) { const t = setTimeout(() => setMsg(""), 5000); return () => clearTimeout(t); } }, [msg]);
 
     const load = () => get("/lotes/pendientes").then(setPendientes).catch(() => {});
     useEffect(() => { load(); }, []);
