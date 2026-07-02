@@ -114,19 +114,24 @@ export async function ventasRoutes(app: FastifyInstance) {
     // --- Ventas normales ---
     app.get("/", async (request) => {
         const q = request.query as { desde?: string; hasta?: string };
-        const hoy = new Date().toISOString().substring(0, 10);
-        const params: any[] = [q.desde || hoy];
-        let where = "WHERE v.created_at::date >= $1::date";
+        const params: any[] = [];
+        const condiciones: string[] = [];
+        if (q.desde) {
+            params.push(q.desde);
+            condiciones.push(`v.created_at::date >= $${params.length}::date`);
+        }
         if (q.hasta) {
             params.push(q.hasta);
-            where += " AND v.created_at::date <= $2::date";
+            condiciones.push(`v.created_at::date <= $${params.length}::date`);
         }
+        const where = condiciones.length ? "WHERE " + condiciones.join(" AND ") : "";
         const result = await query(`
             SELECT v.*, b.nombre AS bodega_nombre
             FROM ventas v
             JOIN bodegas b ON b.id = v.bodega_id
             ${where}
             ORDER BY v.created_at DESC
+            LIMIT 50
         `, params);
         return result.rows;
     });
