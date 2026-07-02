@@ -322,6 +322,7 @@ function POSFormMayoreo({ onClose, onDone, onTicket }: { onClose: () => void; on
                     producto_id: i.producto_id, modalidad: i.modalidad, cantidad: i.cantidad,
                     cajas: i.modalidad === "caja_pesada" ? i.cajas : undefined,
                     vender_completa: i.vender_completa || undefined,
+                    destare_kg: i.modalidad === "caja_pesada" ? i.destare_kg : undefined,
                     precio_unitario: i.precio_unitario, subtotal: i.subtotal, bodega_id: i.bodega_id,
                 })),
             });

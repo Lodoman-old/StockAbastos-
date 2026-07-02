@@ -197,7 +197,7 @@ export async function ventasRoutes(app: FastifyInstance) {
     app.post<{
         Body: {
             bodega_id: string;
-            items: { tarima_id?: string; producto_id?: string; modalidad: string; cantidad: number; cajas?: number; precio_unitario: number; subtotal: number; bodega_id?: string; vender_completa?: boolean }[];
+            items: { tarima_id?: string; producto_id?: string; modalidad: string; cantidad: number; cajas?: number; destare_kg?: number; precio_unitario: number; subtotal: number; bodega_id?: string; vender_completa?: boolean }[];
             tipo_pago: string;
             cliente_id?: string;
             fecha_vencimiento?: string;
@@ -328,13 +328,14 @@ export async function ventasRoutes(app: FastifyInstance) {
             `, [nuevasRestantes, nuevoEstado, tarimaId]);
 
             await query(`
-                INSERT INTO venta_detalles (venta_id, producto_id, lote_id, cantidad_kg, cantidad_cajas, cantidad_unidades, precio_unitario, subtotal, bodega_id)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                INSERT INTO venta_detalles (venta_id, producto_id, lote_id, cantidad_kg, cantidad_cajas, cantidad_unidades, destare_kg, precio_unitario, subtotal, bodega_id)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             `, [
                 venta.rows[0].id, t.producto_id, t.lote_id,
                 item.modalidad === "caja_pesada" ? item.cantidad : null,
                 item.modalidad === "caja_pesada" ? (item as any).cajas || null : item.modalidad === "caja_sellada_entera" ? item.cantidad : item.modalidad === "caja_sellada_media" ? (item.cantidad || 0) * 0.5 : null,
                 item.modalidad === "unidad" ? item.cantidad : null,
+                item.modalidad === "caja_pesada" ? (item as any).destare_kg || null : null,
                 item.precio_unitario, item.subtotal, itemBodegaId,
             ]);
 

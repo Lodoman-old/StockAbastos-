@@ -84,9 +84,10 @@ export async function ticketRoutes(app: FastifyInstance) {
             const nombre = it.producto_nombre.length > 18 ? it.producto_nombre.substring(0, 16) + ".." : it.producto_nombre;
             const cant = it.cantidad_cajas ? `${it.cantidad_cajas}` : it.cantidad_unidades ? `${it.cantidad_unidades}` : it.cantidad_kg ? "1" : "";
             const peso = it.cantidad_kg ? `${parseFloat(it.cantidad_kg).toFixed(2)} kg` : it.cantidad_cajas ? "" : "";
+            const destInfo = it.cantidad_kg && it.destare_kg && it.cantidad_cajas && parseFloat(it.destare_kg) > 0 ? ` (d:${(parseFloat(it.destare_kg) * parseFloat(it.cantidad_cajas)).toFixed(2)})` : "";
             const precio = it.cantidad_kg ? `$${parseFloat(it.precio_unitario).toFixed(2)}/kg` : `$${parseFloat(it.precio_unitario).toFixed(2)}`;
             const subtotal = parseFloat(it.subtotal || 0).toFixed(2);
-            return `<tr><td style="text-align:center">${cant}</td><td style="text-align:center">${nombre}</td><td style="text-align:center">${peso}</td><td style="text-align:center">${precio}</td><td style="text-align:center">$${subtotal}</td></tr>`;
+            return `<tr><td style="text-align:center">${cant}</td><td style="text-align:center">${nombre}</td><td style="text-align:center">${peso}${destInfo}</td><td style="text-align:center">${precio}</td><td style="text-align:center">$${subtotal}</td></tr>`;
         }).join("")}
         <tr class="total-row"><td colspan="4">TOTAL</td><td>$${total}</td></tr>
     </table>
