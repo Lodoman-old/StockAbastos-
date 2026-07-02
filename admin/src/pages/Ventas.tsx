@@ -531,7 +531,7 @@ function POSFormMayoreo({ onClose, onDone, onTicket }: { onClose: () => void; on
                                 <div style={{ marginTop: 6 }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                                         <strong style={{ fontSize: 13, color: "#ff9800" }}>Pausadas ({pausedSales.length})</strong>
-                                        <button onClick={() => setShowPaused(!showPaused)} style={{ background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: 12 }}>{showPaused ? "Ocultar" : "Ver"}</button>
+                                        <button onClick={() => setShowPaused(!showPaused)} style={{ background: "#ff9800", color: "#fff", border: "none", borderRadius: 6, padding: "4px 14px", cursor: "pointer", fontSize: 12, fontWeight: "bold" }}>{showPaused ? "Ocultar" : "Ver"}</button>
                                     </div>
                                     {showPaused && pausedSales.map((ps: any) => {
                                         const d = ps.datos_json; const cnt = d?.items?.length || 0;
