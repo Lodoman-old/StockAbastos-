@@ -133,6 +133,9 @@ function AdminLayout({ children, sidebarOpen, onToggle, onLogout }: { children: 
     const [preciosPendientes, setPreciosPendientes] = useState(0);
     const [stockBajo, setStockBajo] = useState<any[]>([]);
     const [porVencer, setPorVencer] = useState<any[]>([]);
+    const [hidePrecios, setHidePrecios] = useState(false);
+    const [hidePorVencer, setHidePorVencer] = useState(false);
+    const [hideStockBajo, setHideStockBajo] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -233,22 +236,31 @@ function AdminLayout({ children, sidebarOpen, onToggle, onLogout }: { children: 
                 }}>
                     ☰
                 </button>
-                {preciosPendientes > 0 && (
+                {preciosPendientes > 0 && !hidePrecios && (
                     <div style={{ background: "#fff3cd", color: "#856404", padding: "10px 16px", borderRadius: 8, marginBottom: 8, fontSize: 14, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                         <span>Hay <strong>{preciosPendientes}</strong> productos sin precio asignado para hoy</span>
-                        <Link to="/precios-diarios" style={{ color: "#1a8a3a", fontWeight: "bold", textDecoration: "none" }}>Asignar precios →</Link>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <Link to="/precios-diarios" style={{ color: "#1a8a3a", fontWeight: "bold", textDecoration: "none" }}>Asignar precios →</Link>
+                            <button onClick={() => setHidePrecios(true)} style={{ background: "none", border: "none", cursor: "pointer", color: "#856404", fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+                        </div>
                     </div>
                 )}
-                {porVencer.length > 0 && (
+                {porVencer.length > 0 && !hidePorVencer && (
                     <div style={{ background: "#fff3cd", color: "#856404", padding: "10px 16px", borderRadius: 8, marginBottom: 8, fontSize: 14, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                         <span><strong>{porVencer.length}</strong> tarima(s) por vencer en 5 días o menos</span>
-                        <Link to="/bodegas" style={{ color: "#e65100", fontWeight: "bold", textDecoration: "none" }}>Ver en bodegas →</Link>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <Link to="/bodegas" style={{ color: "#e65100", fontWeight: "bold", textDecoration: "none" }}>Ver en bodegas →</Link>
+                            <button onClick={() => setHidePorVencer(true)} style={{ background: "none", border: "none", cursor: "pointer", color: "#856404", fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+                        </div>
                     </div>
                 )}
-                {stockBajo.length > 0 && (
+                {stockBajo.length > 0 && !hideStockBajo && (
                     <div style={{ background: "#fef2f2", color: "#991b1b", padding: "10px 16px", borderRadius: 8, marginBottom: 16, fontSize: 14, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                         <span><strong>{stockBajo.length}</strong> productos con stock bajo</span>
-                        <Link to="/reportes" style={{ color: "#dc2626", fontWeight: "bold", textDecoration: "none" }}>Ver detalles →</Link>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <Link to="/reportes" style={{ color: "#dc2626", fontWeight: "bold", textDecoration: "none" }}>Ver detalles →</Link>
+                            <button onClick={() => setHideStockBajo(true)} style={{ background: "none", border: "none", cursor: "pointer", color: "#991b1b", fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+                        </div>
                     </div>
                 )}
                 {children}

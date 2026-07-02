@@ -9,6 +9,8 @@ export function Dashboard() {
     const [preciosPendientes, setPreciosPendientes] = useState(0);
     const [stockBajo, setStockBajo] = useState(0);
     const [cajaAbierta, setCajaAbierta] = useState<boolean | null>(null);
+    const [hidePrecios, setHidePrecios] = useState(false);
+    const [hideStockBajo, setHideStockBajo] = useState(false);
 
     useEffect(() => {
         get("/dashboard/stats").then(setStats).catch((e) => setError(e.message));
@@ -43,16 +45,22 @@ export function Dashboard() {
                     {cajaAbierta ? "Caja abierta" : "Caja cerrada"}
                 </div>
             )}
-            {preciosPendientes > 0 && (
+            {preciosPendientes > 0 && !hidePrecios && (
                 <div style={{ background: "#fff3cd", color: "#856404", padding: "10px 14px", borderRadius: 8, marginBottom: 8, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span><strong>{preciosPendientes}</strong> productos sin precio hoy</span>
-                    <span style={{ color: "#1a8a3a", fontWeight: "bold" }} onClick={() => window.location.hash = "#/precios_diarios"}>Asignar →</span>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span style={{ color: "#1a8a3a", fontWeight: "bold" }} onClick={() => window.location.hash = "#/precios_diarios"}>Asignar →</span>
+                        <button onClick={() => setHidePrecios(true)} style={{ background: "none", border: "none", cursor: "pointer", color: "#856404", fontSize: 14, padding: 0, lineHeight: 1 }}>✕</button>
+                    </div>
                 </div>
             )}
-            {stockBajo > 0 && (
+            {stockBajo > 0 && !hideStockBajo && (
                 <div style={{ background: "#fef2f2", color: "#991b1b", padding: "10px 14px", borderRadius: 8, marginBottom: 16, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span>Inventario bajo</span>
-                    <span style={{ color: "#dc2626", fontWeight: "bold" }} onClick={() => window.location.hash = "#/reportes"}>Ver →</span>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span style={{ color: "#dc2626", fontWeight: "bold" }} onClick={() => window.location.hash = "#/reportes"}>Ver →</span>
+                        <button onClick={() => setHideStockBajo(true)} style={{ background: "none", border: "none", cursor: "pointer", color: "#991b1b", fontSize: 14, padding: 0, lineHeight: 1 }}>✕</button>
+                    </div>
                 </div>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
