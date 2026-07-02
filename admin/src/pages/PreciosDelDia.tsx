@@ -64,10 +64,11 @@ export function PreciosDelDia() {
             </div>
 
             {msg && (
-                <div style={{ padding: 10, borderRadius: 8, marginBottom: 16, fontSize: 14,
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 10, borderRadius: 8, marginBottom: 16, fontSize: 14,
                     background: msg.includes("Error") ? "#fef2f2" : "#e8f5e9",
                     color: msg.includes("Error") ? "#dc2626" : "#2e7d32" }}>
-                    {msg}
+                    <span style={{ flex: 1 }}>{msg}</span>
+                    <button onClick={() => setMsg("")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "inherit", padding: 0, lineHeight: 1 }}>✕</button>
                 </div>
             )}
 

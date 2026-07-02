@@ -292,8 +292,9 @@ export function POSMenudeo() {
                     </div>
 
                     {msg && (
-                        <div style={{ padding: "6px 10px", borderRadius: 8, fontSize: 12, background: "#e8f5e9", color: "#1a8a3a", marginBottom: 8 }}>
-                            {msg}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 8, fontSize: 12, background: "#e8f5e9", color: "#1a8a3a", marginBottom: 8 }}>
+                            <span style={{ flex: 1 }}>{msg}</span>
+                            <button onClick={() => setMsg("")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "inherit", padding: 0, lineHeight: 1 }}>✕</button>
                         </div>
                     )}
 

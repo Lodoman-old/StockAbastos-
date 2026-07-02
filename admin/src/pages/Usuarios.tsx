@@ -73,7 +73,7 @@ export function Usuarios() {
                 <button onClick={openNew} style={{ background: "#1a8a3a", color: "#fff", border: "none", padding: "8px 16px", borderRadius: 8, cursor: "pointer" }}>+ Nuevo Usuario</button>
             </div>
 
-            {msg && <div style={{ padding: "10px 14px", borderRadius: 8, marginBottom: 12, fontSize: 14, background: "#e8f5e9", color: "#2e7d32" }}>{msg}</div>}
+            {msg && <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, marginBottom: 12, fontSize: 14, background: "#e8f5e9", color: "#2e7d32" }}><span style={{ flex: 1 }}>{msg}</span><button onClick={() => setMsg("")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "inherit", padding: 0, lineHeight: 1 }}>✕</button></div>}
 
             {showModal && (
                 <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }}
