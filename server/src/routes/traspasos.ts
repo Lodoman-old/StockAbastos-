@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { query } from "../db.js";
 import { cascadeLoteEstado } from "./tarimas.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function traspasosRoutes(app: FastifyInstance) {
   app.get("/", async (request) => {
@@ -61,7 +62,7 @@ export async function traspasosRoutes(app: FastifyInstance) {
 
       const lote = await query("SELECT codigo_lote, proveedor_nombre FROM lotes WHERE id = $1", [t.lote_id]);
       const abrev = lote.rows[0]?.proveedor_nombre ? lote.rows[0].proveedor_nombre.substring(0, 4).toUpperCase() : "LOTE";
-      const hoy = new Date().toISOString().substring(0, 10).replace(/-/g, "");
+      const hoy = hoyMexico().replace(/-/g, "");
       const tarimaSeq = await query("SELECT COALESCE(MAX(CAST(SPLIT_PART(codigo_qr, '-', 1) AS VARCHAR)), 'TAR0') FROM tarimas");
       const seqMatch = tarimaSeq.rows[0]?.coalesce?.match(/TAR(\d+)/);
       const nextSeq = seqMatch ? parseInt(seqMatch[1], 10) + 1 : 1;

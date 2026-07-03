@@ -1,7 +1,12 @@
 import pg from "pg";
 import { config } from "./config.js";
 
-const pool = new pg.Pool({ connectionString: config.databaseUrl });
+const timezoneParam = "options=-c%20timezone%3DAmerica%2FMexico_City";
+const connStr = config.databaseUrl.includes("?")
+    ? config.databaseUrl + "&" + timezoneParam
+    : config.databaseUrl + "?" + timezoneParam;
+
+const pool = new pg.Pool({ connectionString: connStr });
 
 pool.on("error", (err) => {
     console.error("Unexpected error on idle client", err);

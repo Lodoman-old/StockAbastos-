@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { query } from "../db.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function mostradorRoutes(app: FastifyInstance) {
 
@@ -26,7 +27,7 @@ export async function mostradorRoutes(app: FastifyInstance) {
     });
 
     app.get("/stock", async () => {
-        const hoy = new Date().toISOString().substring(0, 10);
+        const hoy = hoyMexico();
         const r = await query(`
             SELECT ms.*, p.nombre AS producto_nombre, p.sku,
                    p.modalidad_kilo_suelto, p.modalidad_unidad,

@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { query } from "../db.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function cortesRoutes(app: FastifyInstance) {
     app.get("/hoy", async (request) => {
@@ -54,7 +55,7 @@ export async function cortesRoutes(app: FastifyInstance) {
         const totalRetiros = corte?.total_retiros ? parseFloat(corte.total_retiros) : 0;
 
         return {
-            fecha: new Date().toISOString().substring(0, 10),
+            fecha: hoyMexico(),
             total_ventas: ventas.rows[0].total_ventas,
             total_ingresos: parseFloat(ventas.rows[0].total_ingresos),
             total_kg: parseFloat(ventas.rows[0].total_kg),
@@ -158,7 +159,7 @@ export async function cortesRoutes(app: FastifyInstance) {
         const totalGastos = parseFloat(gastos.rows[0].total_gastos);
 
         const corteActual = await query("SELECT total_retiros, fecha FROM cortes WHERE cerrado_at IS NULL ORDER BY fecha DESC LIMIT 1");
-        const corteFecha = corteActual.rows[0]?.fecha || new Date().toISOString().substring(0, 10);
+        const corteFecha = corteActual.rows[0]?.fecha || hoyMexico();
         const totalRetiros = parseFloat(corteActual.rows[0]?.total_retiros || "0");
 
         const r = await query(`

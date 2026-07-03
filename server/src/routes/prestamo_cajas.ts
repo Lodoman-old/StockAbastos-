@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { query } from "../db.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function prestamoCajasRoutes(app: FastifyInstance) {
     app.get("/", async () => {
@@ -67,7 +68,7 @@ export async function prestamoCajasRoutes(app: FastifyInstance) {
 
         const r = await query(
             `UPDATE prestamo_cajas SET cajas_devueltas = $1, fecha_devolucion = $2, notas = COALESCE($3, notas), updated_at = NOW() WHERE id = $4 RETURNING *`,
-            [nuevasDevueltas, fecha_devolucion || new Date().toISOString().substring(0, 10), notas || null, request.params.id]
+            [nuevasDevueltas, fecha_devolucion || hoyMexico(), notas || null, request.params.id]
         );
         return r.rows[0];
     });

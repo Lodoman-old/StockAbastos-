@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { query } from "../db.js";
 import { cascadeLoteEstado } from "./tarimas.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function ventasRoutes(app: FastifyInstance) {
 
@@ -40,7 +41,7 @@ export async function ventasRoutes(app: FastifyInstance) {
     app.get("/tarimas-disponibles", async (request) => {
         const q = request.query as { bodega_id?: string };
         const params: any[] = [];
-        const hoy = new Date().toISOString().substring(0, 10);
+        const hoy = hoyMexico();
         let where = "WHERE t.estado IN ('RECIBIDA','PARCIAL') AND (p.modalidad_caja_pesada = TRUE OR p.modalidad_caja_sellada = TRUE OR p.modalidad_unidad = TRUE)";
         if (q.bodega_id) { params.push(q.bodega_id); where += ` AND t.bodega_id = $${params.length}`; }
         const r = await query(`
@@ -68,7 +69,7 @@ export async function ventasRoutes(app: FastifyInstance) {
     app.get("/productos-disponibles", async (request) => {
         const q = request.query as { bodega_id?: string };
         if (!q.bodega_id) return [];
-        const hoy = new Date().toISOString().substring(0, 10);
+        const hoy = hoyMexico();
         const r = await query(`
             SELECT p.id AS producto_id, p.nombre AS producto_nombre, p.sku, p.codigo_de_barras,
                    p.modalidad_caja_pesada, p.precio_mayoreo_kg, p.destare_kg,
@@ -236,7 +237,7 @@ export async function ventasRoutes(app: FastifyInstance) {
             }
         }
 
-        const fecha = new Date().toISOString().substring(0, 10);
+        const fecha = hoyMexico();
         const seq = await query(
             `SELECT COALESCE(MAX(CAST(SPLIT_PART(folio, '-', 3) AS INTEGER)), 0) + 1 AS seq
              FROM ventas WHERE folio LIKE $1`,
@@ -372,7 +373,7 @@ export async function ventasRoutes(app: FastifyInstance) {
         const total = items.reduce((s, i) => s + i.subtotal, 0);
         const totalKg = items.reduce((s, i) => s + (i.cantidad_kg || 0), 0);
 
-        const fecha = new Date().toISOString().substring(0, 10);
+        const fecha = hoyMexico();
         const seq = await query(
             `SELECT COALESCE(MAX(CAST(SPLIT_PART(folio, '-', 3) AS INTEGER)), 0) + 1 AS seq
              FROM ventas WHERE folio LIKE $1`,

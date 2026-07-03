@@ -1,9 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { query } from "../db.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function preciosDiariosRoutes(app: FastifyInstance) {
     app.get("/pendientes", async () => {
-        const hoy = new Date().toISOString().substring(0, 10);
+        const hoy = hoyMexico();
         const r = await query(`
             SELECT p.id, p.nombre, p.sku,
                    p.precio_mayoreo_kg, p.precio_caja_sellada, p.precio_menudeo_kg, p.precio_por_unidad,
@@ -48,7 +49,7 @@ export async function preciosDiariosRoutes(app: FastifyInstance) {
     });
 
     app.get("/:fecha?", async (request: any) => {
-        const fecha = request.params.fecha || new Date().toISOString().substring(0, 10);
+        const fecha = request.params.fecha || hoyMexico();
         const r = await query(`
             SELECT pd.*, p.nombre AS producto_nombre, p.sku
             FROM precios_diarios pd
@@ -63,7 +64,7 @@ export async function preciosDiariosRoutes(app: FastifyInstance) {
         const { items } = request.body;
         if (!items || !items.length) return reply.status(400).send({ error: "Sin productos" });
 
-        const hoy = new Date().toISOString().substring(0, 10);
+        const hoy = hoyMexico();
         for (const item of items) {
             await query(
                 `INSERT INTO precios_diarios (producto_id, precio_mayoreo_kg, precio_caja_sellada, precio_menudeo_kg, precio_unidad, fecha)

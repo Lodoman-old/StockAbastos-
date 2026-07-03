@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { query } from "../db.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function gastosRoutes(app: FastifyInstance) {
     app.get<{ Querystring: { all?: string } }>("/", async (request) => {
@@ -14,7 +15,7 @@ export async function gastosRoutes(app: FastifyInstance) {
         if (!concepto || !monto) return reply.status(400).send({ error: "Concepto y monto requeridos" });
         const r = await query(
             "INSERT INTO gastos (concepto, monto, categoria, fecha) VALUES ($1, $2, $3, $4) RETURNING *",
-            [concepto, monto, categoria || null, fecha || new Date().toISOString().substring(0, 10)]
+            [concepto, monto, categoria || null, fecha || hoyMexico()]
         );
         return r.rows[0];
     });

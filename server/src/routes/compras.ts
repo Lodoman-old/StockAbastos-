@@ -1,10 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { query, transaction } from "../db.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function comprasRoutes(app: FastifyInstance) {
     app.get("/", async (request) => {
         const q = request.query as { desde?: string; hasta?: string };
-        const hoy = new Date().toISOString().substring(0, 10);
+        const hoy = hoyMexico();
         const params: any[] = [q.desde || hoy];
         let where = "WHERE c.fecha >= $1::date";
         if (q.hasta) {
@@ -77,19 +78,19 @@ export async function comprasRoutes(app: FastifyInstance) {
         const { proveedor, fecha, costo_total, tarimas } = request.body;
         if (!tarimas || !tarimas.length) return reply.status(400).send({ error: "Agrega al menos una tarima" });
         return transaction(async (client) => {
-            const hoy = new Date().toISOString().substring(0, 10).replace(/-/g, "");
+            const hoy = hoyMexico().replace(/-/g, "");
             const abrev = proveedor ? proveedor.substring(0, 4).toUpperCase() : "LOTE";
             const padreCodigo = `${abrev}-${hoy}-${Math.floor(Math.random() * 900) + 100}`;
 
             const padre = await client.query(`
                 INSERT INTO lotes (codigo_lote, estado, proveedor_nombre, fecha_recepcion, cantidad_recibida_kg, cantidad_actual_kg)
                 VALUES ($1, 'PENDIENTE', $2, $3, 0.001, 0.001) RETURNING *
-            `, [padreCodigo, proveedor || null, fecha || new Date().toISOString().substring(0, 10)]);
+            `, [padreCodigo, proveedor || null, fecha || hoyMexico()]);
 
             const totalCost = costo_total || 0;
             const compra = await client.query(
                 "INSERT INTO compras (proveedor, total, fecha) VALUES ($1, $2, $3) RETURNING *",
-                [proveedor || null, totalCost, fecha || new Date().toISOString().substring(0, 10)]
+                [proveedor || null, totalCost, fecha || hoyMexico()]
             );
             const compraId = compra.rows[0].id;
             let tarimaSeq = 1;

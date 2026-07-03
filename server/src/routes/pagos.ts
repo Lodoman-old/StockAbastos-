@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { query, transaction } from "../db.js";
+import { hoyMexico } from "../date-utils.js";
 
 export async function pagosRoutes(app: FastifyInstance) {
     app.get<{ Params: { ventaId: string } }>("/venta/:ventaId", async (request) => {
@@ -24,7 +25,7 @@ export async function pagosRoutes(app: FastifyInstance) {
             }
             const pago = await client.query(
                 "INSERT INTO pagos (venta_id, monto, fecha) VALUES ($1, $2, $3) RETURNING *",
-                [venta_id, monto, fecha || new Date().toISOString().substring(0, 10)]
+                [venta_id, monto, fecha || hoyMexico()]
             );
             const nuevoSaldo = Math.max(0, parseFloat(v.saldo_pendiente) - monto);
             await client.query(
