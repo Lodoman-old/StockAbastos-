@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { get, post, put, del } from "../services/api";
 import { notify } from "../components/Toast";
+import { todayLocal } from "../date-utils";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 const emptyForm = { producto_id: "", tarima_tipo_id: "", cantidad: "1", peso_kg: "", costo_por_kg: "", bodega_id: "", fecha_caducidad: "", compra_por_cajas: false, cajas_directas: "1" };
 
@@ -15,7 +16,7 @@ export function Compras() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [proveedor, setProveedor] = useState("");
-    const [fecha, setFecha] = useState(new Date().toISOString().substring(0, 10));
+    const [fecha, setFecha] = useState(todayLocal());
     const [tarimaForm, setTarimaForm] = useState(emptyForm);
     const [tarimaItems, setTarimaItems] = useState<Array<{ producto_id: string; producto_nombre: string; tarima_tipo_id: string; tarima_tipo_nombre: string; cantidad: string; peso_kg: string; costo_por_kg: string; bodega_id: string; bodega_nombre: string; fecha_caducidad: string; compra_por_cajas?: boolean; cajas_directas?: string; es_unidad?: boolean }>>([]);
     const productoSeleccionado = productos.find(p => p.id === tarimaForm.producto_id);
@@ -103,7 +104,7 @@ export function Compras() {
             notify(`Compra registrada — Lote: ${padreStr} (${res.lotes?.length || 0} hijo(s))`, "success");
             setShowModal(false);
             setProveedor("");
-            setFecha(new Date().toISOString().substring(0, 10));
+        setFecha(todayLocal());
             setTarimaItems([]);
             setTarimaForm(emptyForm);
             setCostoTotal("");
@@ -113,7 +114,7 @@ export function Compras() {
 
     const cargarModal = () => {
         setProveedor("");
-        setFecha(new Date().toISOString().substring(0, 10));
+        setFecha(todayLocal());
         setTarimaItems([]);
         setTarimaForm(emptyForm);
         setCostoTotal("");
@@ -317,7 +318,7 @@ export function Compras() {
                                 </td>
                                 <td style={{ padding: 12, fontWeight: "bold" }}>${money(c.total || 0)}</td>
                                 <td style={{ padding: 12, display: "flex", gap: 6 }}>
-                                    <button onClick={() => setEditModal({ id: c.id, proveedor: c.proveedor || "", fecha: c.fecha ? new Date(c.fecha).toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10), costo_total: c.total ? parseFloat(c.total).toFixed(2) : "", detalles: c.detalles?.map((d: any) => ({ ...d })) || [] })}
+                                    <button onClick={() => setEditModal({ id: c.id, proveedor: c.proveedor || "",                             fecha: c.fecha || todayLocal(), costo_total: c.total ? parseFloat(c.total).toFixed(2) : "", detalles: c.detalles?.map((d: any) => ({ ...d })) || [] })}
                                         style={{ background: "none", border: "1px solid #ff9800", color: "#ff9800", borderRadius: 4, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}>Editar</button>
                                     <button onClick={() => setDeleteConfirm({ id: c.id })}
                                         style={{ background: "none", border: "1px solid #f44336", color: "#f44336", borderRadius: 4, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}>Eliminar</button>

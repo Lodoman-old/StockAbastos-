@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { get, getApiUrl } from "../api";
 import { post } from "../services/api";
+import { todayLocal } from "../date-utils";
 
 const emptyForm = { producto_id: "", tarima_tipo_id: "", cantidad: "1", peso_kg: "", costo_por_kg: "", bodega_id: "", fecha_caducidad: "", compra_por_cajas: false, cajas_directas: "1" };
 
@@ -15,7 +16,7 @@ export function Compras() {
     const [tarimasTipos, setTarimasTipos] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [proveedor, setProveedor] = useState("");
-    const [fecha, setFecha] = useState(new Date().toISOString().substring(0, 10));
+    const [fecha, setFecha] = useState(todayLocal());
     const [form, setForm] = useState(emptyForm);
     const [items, setItems] = useState<any[]>([]);
     const [provFilter, setProvFilter] = useState("");
@@ -89,7 +90,7 @@ export function Compras() {
             alert(msg);
             setShowModal(false);
             setProveedor("");
-            setFecha(new Date().toISOString().substring(0, 10));
+            setFecha(todayLocal());
             setItems([]);
             setForm(emptyForm);
             setCostoTotal("");

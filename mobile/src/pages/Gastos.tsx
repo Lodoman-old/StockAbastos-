@@ -2,6 +2,7 @@ import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { IonList, IonItem, IonLabel, IonButton, IonInput, IonSelect, IonSelectOption, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonPage, IonText, IonDatetime } from "@ionic/react";
 import { get, post, del } from "../services/api";
+import { todayLocal } from "../date-utils";
 
 const CATEGORIAS = ["Luz", "Agua", "Nómina", "Renta", "Transporte", "Mantenimiento", "Otro"];
 
@@ -11,7 +12,7 @@ export function Gastos() {
     const [concepto, setConcepto] = useState("");
     const [monto, setMonto] = useState("");
     const [categoria, setCategoria] = useState("");
-    const [fecha, setFecha] = useState(new Date().toISOString().substring(0, 10));
+    const [fecha, setFecha] = useState(todayLocal());
 
     const load = () => get("/gastos").then(setGastos).catch(() => {});
     useEffect(() => { load(); }, []);

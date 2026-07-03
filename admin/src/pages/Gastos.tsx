@@ -1,13 +1,14 @@
 import { money } from "../format";
 import React, { useEffect, useState } from "react";
 import { get, post, del } from "../services/api";
+import { todayLocal } from "../date-utils";
 const CATEGORIAS = ["Luz", "Agua", "Nómina", "Renta", "Transporte", "Mantenimiento", "Otro"];
 
 export function Gastos() {
     const [gastos, setGastos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [form, setForm] = useState({ concepto: "", monto: "", categoria: "", fecha: new Date().toISOString().substring(0, 10) });
+    const [form, setForm] = useState({ concepto: "", monto: "", categoria: "", fecha: todayLocal() });
 
     const load = () => get("/gastos").then(setGastos).catch(() => {}).finally(() => setLoading(false));
     useEffect(() => { load(); }, []);
@@ -17,7 +18,7 @@ export function Gastos() {
         try {
             await post("/gastos", { ...form, monto: parseFloat(form.monto) });
             setShowModal(false);
-            setForm({ concepto: "", monto: "", categoria: "", fecha: new Date().toISOString().substring(0, 10) });
+            setForm({ concepto: "", monto: "", categoria: "", fecha: todayLocal() });
             load();
         } catch (e: any) { alert("Error: " + e.message); }
     };
