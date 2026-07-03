@@ -267,7 +267,7 @@ export async function cortesRoutes(app: FastifyInstance) {
     ${logoUrl ? `<img class="logo" src="${logoUrl}" />` : ""}
     ${encabezado ? `<div class="encabezado">${encabezado.replace(/\n/g, "<br>")}</div>` : ""}
     <div class="titulo">INVENTARIO DE CAJAS</div>
-    <div class="center" style="font-size:${is58 ? "8px" : "10px"}">${new Date().toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
+    <div class="center" style="font-size:${is58 ? "8px" : "10px"}">${new Date().toLocaleDateString("es-MX", { timeZone: "America/Mexico_City", weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
     ${kg.rows.length ? `<div style="font-size:${is58 ? "8px" : "10px"};margin-bottom:2mm"><b>KG VENDIDOS DEL DÍA</b></div>
     ${(() => {
         const grouped: Record<string, any[]> = {};

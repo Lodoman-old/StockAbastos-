@@ -74,7 +74,7 @@ export async function ticketRoutes(app: FastifyInstance) {
     ${logoUrl ? `<img class="logo" src="${logoUrl}" />` : ""}
     ${encabezado ? `<div class="encabezado">${encabezado.replace(/\n/g, "<br>")}</div>` : ""}
     <div class="folio">${v.folio}</div>
-    <div class="center" style="font-size:${is58 ? "8px" : "10px"}">${new Date(v.created_at).toLocaleString("es-MX")}</div>
+    <div class="center" style="font-size:${is58 ? "8px" : "10px"}">${new Date(v.created_at).toLocaleString("es-MX", { timeZone: "America/Mexico_City" })}</div>
     <div class="center" style="font-size:${is58 ? "8px" : "10px"}">${v.bodega_nombre || ""}</div>
     ${v.cliente_nombre ? `<div class="cliente">Cliente: ${v.cliente_nombre}<br>${v.cliente_direccion || ""}</div>` : ""}
     <hr>
@@ -96,7 +96,7 @@ export async function ticketRoutes(app: FastifyInstance) {
         ${v.tipo_pago === "credito" ? `
             <p>Pago: Crédito</p>
             ${v.cliente_nombre ? `<p>Cliente: ${v.cliente_nombre}</p>` : ""}
-            ${v.fecha_vencimiento ? `<p>Vence: ${new Date(v.fecha_vencimiento).toLocaleDateString("es-MX")}</p>` : ""}
+            ${v.fecha_vencimiento ? `<p>Vence: ${new Date(v.fecha_vencimiento).toLocaleDateString("es-MX", { timeZone: "America/Mexico_City" })}</p>` : ""}
         ` : `
             <p>Efectivo: $${efectivo}</p>
             <p>Cambio: $${cambio}</p>
@@ -159,7 +159,7 @@ export async function ticketRoutes(app: FastifyInstance) {
     ${logoUrl ? `<img class="logo" src="${logoUrl}" />` : ""}
     ${encabezado ? `<div class="center" style="font-size:${is58 ? "9px" : "11px"};margin-bottom:3mm">${encabezado.replace(/\n/g, "<br>")}</div>` : ""}
     <div class="folio">RECIBO DE PAGO</div>
-    <div class="center" style="font-size:${is58 ? "9px" : "11px"}">${new Date(p.fecha).toLocaleDateString("es-MX")}</div>
+    <div class="center" style="font-size:${is58 ? "9px" : "11px"}">${new Date(p.fecha).toLocaleDateString("es-MX", { timeZone: "America/Mexico_City" })}</div>
     <hr>
     <div class="detalle">Venta: ${p.folio}</div>
     <div class="detalle">Cliente: ${p.cliente_nombre || "N/A"}</div>

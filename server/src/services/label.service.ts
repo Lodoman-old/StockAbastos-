@@ -51,9 +51,9 @@ export async function generateQRDataURL(data: string): Promise<string> {
 
 export function generateZPL(data: LabelData, copies: number = 1): string {
     const cad = data.fecha_caducidad
-        ? new Date(data.fecha_caducidad).toLocaleDateString("es-MX")
+        ? new Date(data.fecha_caducidad).toLocaleDateString("es-MX", { timeZone: "America/Mexico_City" })
         : "N/A";
-    const rec = new Date(data.fecha_recepcion).toLocaleDateString("es-MX");
+    const rec = new Date(data.fecha_recepcion).toLocaleDateString("es-MX", { timeZone: "America/Mexico_City" });
 
     return `^XA
 ^FO30,25^ADN,18,9^FDStockAbastos^FS
@@ -72,9 +72,9 @@ export function generateZPL(data: LabelData, copies: number = 1): string {
 export async function generateHtmlLabel(data: LabelData, copies: number = 1): Promise<string> {
     const qrDataUrl = await generateQRDataURL(data.codigo_lote);
     const cad = data.fecha_caducidad
-        ? new Date(data.fecha_caducidad).toLocaleDateString("es-MX")
+        ? new Date(data.fecha_caducidad).toLocaleDateString("es-MX", { timeZone: "America/Mexico_City" })
         : "N/A";
-    const rec = new Date(data.fecha_recepcion).toLocaleDateString("es-MX");
+    const rec = new Date(data.fecha_recepcion).toLocaleDateString("es-MX", { timeZone: "America/Mexico_City" });
     const labels = Array.from({ length: copies }, () => `
 <div class="label">
     <div class="left">
